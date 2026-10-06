@@ -10,6 +10,7 @@ export default defineConfig({
       input: {
         main: fileURLToPath(new URL("./index.html", import.meta.url)),
         rehearsal: fileURLToPath(new URL("./rehearsal.html", import.meta.url)),
+        teleprompter: fileURLToPath(new URL("./teleprompter.html", import.meta.url)),
       },
     },
   },
