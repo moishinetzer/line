@@ -105,6 +105,9 @@ export async function startServer(config: Config) {
         const tools = await client.listTools();
         return json(response, 200, { tools: tools.tools.map(({ name }) => name) });
       }
+      if (url.pathname === "/lovable/workspaces") {
+        return json(response, 200, await lovable.call("list_workspaces", {}));
+      }
       const demo = url.pathname.match(/^\/demo\/(party|wakeup|boba)$/);
       if (demo) {
         response.writeHead(200, { "content-type": "text/html; charset=utf-8" });

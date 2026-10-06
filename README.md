@@ -52,7 +52,8 @@ one of `party.md`, `wakeup.md`, or `boba.md` and sends that fixed prompt to Lova
 1. Set `LOVABLE_MODE=mcp` and restart.
 2. Open http://localhost:3001/auth/lovable and complete browser OAuth.
 3. Visit http://localhost:3001/lovable/tools to verify tool discovery.
-4. If you have several eligible workspaces, set `LOVABLE_WORKSPACE_ID` explicitly.
+4. If you have several eligible workspaces, get their IDs from
+   http://localhost:3001/lovable/workspaces and set `LOVABLE_WORKSPACE_ID` explicitly.
 5. Ask Astra to build a site (or use `/build party` with the mock agent).
 
 OAuth credentials are saved in `.local/lovable-auth.json`, excluded from Git.
@@ -67,6 +68,11 @@ npm run typecheck
 npm test
 npm run build
 ```
+
+Tests cover all three flows, room isolation/replay/reset, duplicate requests,
+and the actual Effect AI Responses + MCP adapters against local test servers.
+Live Astra access and Lovable OAuth/builds require your credentials and are not
+verified by the automated suite.
 
 State is in memory. Reconnecting restores a room's messages while the server is
 running; restarting clears them. Reset an idle room between demos. Successful
