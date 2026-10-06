@@ -92,3 +92,5 @@ uses the original local simulator. `?app=...` is always a local mini-app view.
 `apps/web/shared/protocol.ts` describes those local widgets, not the wire API.
 The app drawer links to real sites in connected mode and hosts interactive local
 widgets in simulator mode. No cross-device app-state synchronization is implied.
+
+The backend also accepts `@Astra` as a compatibility alias. The WhatsApp composer uses `@Lines`; both invoke the same `gpt-6-astra` model. Main demo rooms start with two ordinary friend messages, with the recording request prefilled.

@@ -237,3 +237,15 @@ export function seedSnapshot(): Snapshot {
     },
   };
 }
+
+// Ordinary opening lines only: sending them gives Astra context without waking it.
+export const recordingOpening: Record<RoomId, { actor: MemberId; text: string }[]> = {
+  party: [{ actor: "maya", text: "party at mine this weekend?" }, { actor: "leo", text: "i'm in. who's bringing what?" }],
+  morning: [{ actor: "ao", text: "snoozed my alarm again 💀" }, { actor: "maya", text: "we need some competition" }],
+  boba: [{ actor: "leo", text: "boba run? 🧋" }, { actor: "nina", text: "yes pls. everyone's order gets lost in here" }],
+};
+export const recordingRequest: Record<RoomId, string> = {
+  party: "@Lines help us organise the party?",
+  morning: "@Lines build us a morning check-in leaderboard.",
+  boba: "@Lines make us a shared boba order list.",
+};

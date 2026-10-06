@@ -40,4 +40,4 @@ export type ServerEvent = z.infer<typeof ServerEventSchema>;
 
 // A standalone @Lines mention, not an email, URL, or longer handle.
 export const hasLinesMention = (text: string): boolean =>
-  /(?<![\p{L}\p{N}_@./:+-])@lines(?![\p{L}\p{N}_@-]|\.[\p{L}\p{N}_])/iu.test(text);
+  /(?<![\p{L}\p{N}_@./:+-])@(?:lines|astra)(?![\p{L}\p{N}_@-]|\.[\p{L}\p{N}_])/iu.test(text);

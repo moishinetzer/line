@@ -23,6 +23,6 @@ test("wakeup maps to morning; replayed ready cards deduplicate and approval stay
   assert.equal(ServerEventSchema.safeParse({ type: "site.ready", roomId: "morning", requestId: "r", build: { ...ready, url: "javascript:alert(1)" } }).success, false);
 });
 test("server wake gate matches UI mention boundaries", () => {
-  for (const text of ["@Lines help", "hey (@LINES)", "@Lines!", "@Lines。你好"]) assert.ok(hasLinesMention(text), text);
-  for (const text of ["@Astra", "person@lines.com", "https://example.com/@lines", "@lines-team", "@LinesBot", "@lines.example", "@@Lines", "hello"]) assert.equal(hasLinesMention(text), false, text);
+  for (const text of ["@Astra help", "@Lines help", "hey (@LINES)", "@Lines!", "@Lines。你好"]) assert.ok(hasLinesMention(text), text);
+  for (const text of ["person@lines.com", "https://example.com/@lines", "@lines-team", "@LinesBot", "@lines.example", "@@Lines", "hello"]) assert.equal(hasLinesMention(text), false, text);
 });

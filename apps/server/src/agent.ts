@@ -29,7 +29,7 @@ export function agentLayer(config: Config) {
       respond: ({ messages, buildSite }) => Effect.tryPromise({
         try: async () => {
           const text = messages.at(-1)?.text ?? "";
-          const match = text.match(/^(?:@lines[,:]?\s+)?\/build\s+(party|wakeup|boba)\s*$/i);
+          const match = text.match(/^(?:@(?:lines|astra)[,:]?\s+)?\/build\s+(party|wakeup|boba)\s*$/i);
           if (match) {
             const result = await buildSite(ScenarioSchema.parse(match[1].toLowerCase()));
             if (result.status === "awaiting_input") return `Lovable is waiting for your plan approval. Review it here: ${result.editorUrl}. Then use Check again in the group app.`;

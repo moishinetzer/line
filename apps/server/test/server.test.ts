@@ -58,7 +58,7 @@ test("Lines only responds when tagged and retains ordinary group messages as con
       ["ordinary", "Sam is buying the drinks."],
       ["email", "Contact alex@lines.com"],
       ["other-tag", "@LinesBot @linesl @lines-team"],
-      ["former-agent", "@Astra hello"],
+      ["unrelated-agent", "@AstraBot hello"],
       ["url", "https://example.com/@Lines"],
       ["tagged", "Hey @lInEs, can you help?"],
     ]) alex.send({ type: "chat.send", id, text });
@@ -67,7 +67,7 @@ test("Lines only responds when tagged and retains ordinary group messages as con
     assert.match(JSON.stringify(requests[0].input), /Sam is buying the drinks/);
     assert.deepEqual(alex.events.filter((event) => event.type === "agent.status" && event.status === "thinking").map((event) => event.type === "agent.status" && event.requestId), ["tagged"]);
     alex.send({ type: "chat.send", id: "follow-up", text: "Jo will bring cups." });
-    alex.send({ type: "chat.send", id: "tagged-again", text: "@Lines: what else is needed?" });
+    alex.send({ type: "chat.send", id: "tagged-again", text: "@Astra: what else is needed?" });
     await alex.wait((event) => event.type === "chat.message" && event.message.replyTo === "tagged-again");
     assert.equal(requests.length, 2, "Each agent turn needs its own tag");
     assert.match(JSON.stringify(requests[1].input), /Jo will bring cups/);

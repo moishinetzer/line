@@ -22,7 +22,7 @@ import {
   X,
 } from "lucide-react";
 import type { MemberId, RoomId, Message } from "../shared/protocol";
-import { roomMeta, members, memberName, publishedApps } from "./lib/data";
+import { roomMeta, members, memberName, publishedApps, recordingRequest } from "./lib/data";
 import { createTransport } from "./lib/transport";
 import { messageParts } from "../shared/mentions";
 import { ChatComposer } from "./components/ChatComposer";
@@ -514,7 +514,8 @@ export default function App() {
               roomId={roomId}
               actor={actor}
               connected={connected}
-              busy={room.appStatus === "building"}
+              busy={room.appStatus === "building" || !!room.thinking}
+              suggestedDraft={room.appStatus === "ready" ? "" : room.messages.some((message) => message.author === "lines") ? (roomId === "party" ? "@Lines yes, make it." : "") : room.messages.some((message) => /@(?:Lines|Astra)/i.test(message.text)) ? "" : recordingRequest[roomId]}
               onSend={(text) =>
                 send({ type: "message.send", roomId, actor, text })
               }

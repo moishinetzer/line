@@ -1,7 +1,7 @@
 import { ServerEventSchema, type Build, type ChatMessage, type ClientEvent, type Scenario } from "@group-dots/protocol";
 import type { AgentTransport, StoreState } from "./transport";
 import type { MemberId, Message, Room, RoomId } from "../../shared/protocol";
-import { members, seedSnapshot } from "./data";
+import { members, seedSnapshot, recordingOpening } from "./data";
 
 export const scenarioForRoom: Record<RoomId, Scenario> = { party: "party", morning: "wakeup", boba: "boba" };
 export const toMessage = (message: ChatMessage): Message => ({
@@ -14,7 +14,7 @@ export function applyBuild(room: Room, build: Build): Room {
   const cardId = `build-${build.id}`;
   const messages = room.messages.filter((message) => message.id !== cardId);
   if (build.status === "ready" && build.url) messages.push({
-    id: cardId, author: "lines", text: build.mocked ? "Your prebuilt demo is ready to open." : "Here’s your group’s app.",
+    id: cardId, author: "lines", text: build.mocked ? "sorted — your group demo is ready." : "sorted — here’s your group’s app.",
     at: room.messages.find((message) => message.id === cardId)?.at ?? new Date().toISOString(), appCard: true,
   });
   return { ...room, messages, appStatus: build.status, appUrl: build.url, editorUrl: build.editorUrl, error: build.error, buildId: build.id };
@@ -29,6 +29,7 @@ export function createSocketTransport(url: string): AgentTransport {
   const listeners = new Set<() => void>();
   const sockets = new Map<RoomId, WebSocket>();
   const joined = new Set<RoomId>();
+  const seeding = new Set<RoomId>();
   const identities = new Map<RoomId, MemberId>();
   let activeRoom: RoomId = "party";
   let actor: MemberId = "ao";
@@ -63,6 +64,15 @@ export function createSocketTransport(url: string): AgentTransport {
           for (const build of event.builds) room = applyBuild(room, build);
           joined.add(id);
           publish({ error: null, modes: { agent: event.agentMode, lovable: event.lovableMode } });
+          if (event.messages.length === 0 && !seeding.has(id)) {
+            seeding.add(id);
+            const member = identities.get(id) ?? actor;
+            for (const [index, line] of recordingOpening[id].entries()) {
+              emit(socket, { type: "room.join", roomId: id, user: members.find((user) => user.id === line.actor)! });
+              emit(socket, { type: "chat.send", id: `recording-opening-${id}-${index}`, text: line.text });
+            }
+            join(id, member);
+          } else if (event.messages.length >= recordingOpening[id].length) seeding.delete(id);
         } else if (event.type === "chat.message") {
           if (!room.messages.some((message) => message.id === event.message.id)) room = { ...room, messages: [...room.messages, toMessage(event.message)] };
         } else if (event.type === "agent.status") room = { ...room, thinking: event.status === "thinking" };

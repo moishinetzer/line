@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowUpRight,
   AtSign,
@@ -21,6 +21,7 @@ type Props = {
   busy: boolean;
   onSend: (text: string) => void;
   openApp: () => void;
+  suggestedDraft?: string;
 };
 export function ChatComposer({
   roomId,
@@ -29,8 +30,10 @@ export function ChatComposer({
   busy,
   onSend,
   openApp,
+  suggestedDraft = "",
 }: Props) {
-  const [draft, setDraft] = useState("");
+  const [draft, setDraft] = useState(suggestedDraft);
+  useEffect(() => { setDraft((current) => current || suggestedDraft); }, [suggestedDraft]);
   const [caret, setCaret] = useState(0);
   const [dismissed, setDismissed] = useState(false);
   const [tray, setTray] = useState<"actions" | "emoji" | "voice" | null>(null);
@@ -66,7 +69,7 @@ export function ChatComposer({
     );
   }
   function submit() {
-    if (!draft.trim() || !connected) return;
+    if (!draft.trim() || !connected || busy) return;
     onSend(draft.trim());
     setDraft("");
     setCaret(0);
