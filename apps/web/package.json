@@ -7,6 +7,19 @@
     "dev": "vite --host 127.0.0.1 --port 5173 --strictPort",
     "build": "vite build"
   },
-  "dependencies": { "@group-dots/protocol": "*" },
-  "devDependencies": { "vite": "^7.0.0" }
+  "dependencies": {
+    "@group-dots/protocol": "*",
+    "@fontsource/dm-sans": "^5.2.8",
+    "@fontsource/dm-serif-display": "^5.2.8",
+    "lucide-react": "^1.52.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "vite": "^7.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^5.0.0"
+  }
 }

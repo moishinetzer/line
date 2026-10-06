@@ -1,74 +1,69 @@
-# Line
+# Lines
 
-[GitHub repository](https://github.com/moishinetzer/line)
-
-Astra in a group chat → one of three Lovable mini-apps. Local hackathon backend
-with a replaceable frontend starter. npm workspaces, TypeScript, Effect 4 +
-Effect AI, WebSockets, and the official MCP client SDK.
+A group agent living in a WhatsApp-style chat. Mention **@Lines** to turn the
+conversation into a party checklist, morning leaderboard, or boba order board.
+React + TypeScript + Vite frontend; Effect AI/Astra backend; Lovable MCP.
 
 ## Run
 
-Node 22.12+ recommended.
+Node 22.12+; run from this repository's root:
 
 ```sh
 npm install
+cp .env.example .env
 npm run dev
 ```
 
-Open http://localhost:5173. The backend runs on http://localhost:3001.
-Everything starts in explicit mock mode without keys. Switch participants and
-try the three build buttons. Mock builds return a local receipt page; configure
-the `DEMO_*_URL` variables to return prebuilt sites instead.
+Open http://localhost:5173. The backend is http://localhost:3001.
+Defaults use a mock agent and the three prebuilt Lovable demos from `.env.example`.
+No keys are needed. Without `.env`, mock builds return a labelled local receipt.
+Send `@Lines /build party`, `@Lines /build wakeup`, or `@Lines /build boba` in the
+matching group. Switch Ao/Maya/Leo/Nina using the selector below the chat list.
 
-## Work in parallel
+For the original self-contained visual demo, open http://localhost:5173/?demo=1.
+It has seeded conversations, simulated replies and interactive local mini-apps.
+Standalone local views: `/?app=party`, `/?app=morning`, `/?app=boba`.
+Generated Lovable sites keep separate browser demo data; this is not WhatsApp
+messaging integration or a shared production database.
 
-| Owner | Files |
-| --- | --- |
-| Moishi: backend + conversation | `apps/server/`, `packages/prompts/agent.md` |
-| Teammate: WhatsApp UI | Main page in `apps/web/` |
-| Teammate: Lovable prompts | `packages/prompts/party.md`, `wakeup.md`, `boba.md` |
-| Prompt rehearsal | `apps/web/rehearsal.html`, `apps/web/src/rehearsal.ts` |
-| Shared contract | `packages/protocol/src/index.ts` |
+## Fixed prompts and Lovable approval
 
-**Frontend teammate: start with [docs/INTEGRATION.md](docs/INTEGRATION.md).**
-For the recording and verified live-build status, see [docs/DEMO.md](docs/DEMO.md).
-To tune the chat prompt with live Astra and fixed build results, see
-[docs/PROMPT-REHEARSAL.md](docs/PROMPT-REHEARSAL.md).
-You can run only the UI with `npm run dev:web` or only the backend with
-`npm run dev:server`. Prompt edits are loaded on the next request, without a restart.
+Start with **[docs/FIXED_PROMPTS.md](docs/FIXED_PROMPTS.md)**. The three complete
+Markdown prompts in `packages/prompts/` are passed to Lovable unchanged.
+They include fixed members, demo content, interaction rules and the final Lines
+logo: three characters standing together with no connecting strokes.
 
-## Use Astra
+If Lovable pauses for a plan approval, the app shows the editor link. Review and
+decide there, then use **Check again** in the group app. This checks the same
+project. The app does not auto-approve or create a replacement. Live project IDs
+survive server restarts in ignored `.local/build-jobs.json`.
 
-```sh
-cp .env.example .env
-```
+## Live Astra and Lovable
 
 Set `AGENT_MODE=astra` and `OPENAI_API_KEY` in the root `.env`, then restart.
-The default model is `gpt-6-astra`, using the Responses API via Effect AI.
-`OPENAI_MODEL` and `OPENAI_BASE_URL` support a hackathon-specific endpoint/model.
-There is no automatic fallback to another model. Keep `LOVABLE_MODE=mock` while
-tuning conversation prompts if you want to avoid creating Lovable projects.
+The model remains `gpt-6-astra`; the visible group participant is **Lines**.
+`OPENAI_MODEL` and `OPENAI_BASE_URL` support the hackathon endpoint. Each response
+needs a standalone `@Lines` tag; ordinary messages stay available as context.
 
-Only incoming messages tagged `@Astra` get an agent turn; ordinary group messages
-remain available as context. Each new response requires a tag. The model can
-respond conversationally, ask the group to wait, or call `build_site({ scenario })`. The tool reads exactly
-one of `party.md`, `wakeup.md`, or `boba.md` and sends that fixed prompt to Lovable.
+To generate new apps, set `LOVABLE_MODE=mcp`, restart, and visit
+http://localhost:3001/auth/lovable to complete OAuth. Tool discovery is at
+`/lovable/tools`; workspace IDs at `/lovable/workspaces`. If needed, set
+`LOVABLE_WORKSPACE_ID` explicitly. Build credits are used only in MCP mode.
+Credentials remain local in `.env` and `.local/`. Every collaborator authenticates
+on their own machine. The server returns previews; publishing is a separate step.
 
-## Connect Lovable MCP
+## Project map
 
-1. Set `LOVABLE_MODE=mcp` and restart.
-2. Open http://localhost:3001/auth/lovable and complete browser OAuth.
-3. Visit http://localhost:3001/lovable/tools to verify tool discovery.
-4. If you have several eligible workspaces, get their IDs from
-   http://localhost:3001/lovable/workspaces and set `LOVABLE_WORKSPACE_ID` explicitly.
-5. Tag `@Astra` to build a site (or use `@Astra /build party` with the mock agent).
+| Area | Path |
+| --- | --- |
+| WhatsApp UI, logo, three local mini-apps | `apps/web/` |
+| Moishi: backend and conversation prompt | `apps/server/`, `packages/prompts/agent.md` |
+| Wire events and validation | `packages/protocol/src/index.ts` |
+| Ao: fixed Lovable build prompts | `packages/prompts/party.md`, `wakeup.md`, `boba.md` |
+| Moishi: prompt rehearsal | `apps/web/rehearsal.html`, `apps/web/src/rehearsal.ts` |
+| Optional standalone Lovable developer CLI | `tools/lovable/` |
 
-OAuth credentials are saved in `.local/lovable-auth.json`, excluded from Git.
-The backend calls `create_project` with `wait=true`, then gets the preview URL
-with `get_project`. It returns a preview link without publishing to production.
-Live builds consume Lovable credits and can take several minutes.
-
-## Verify
+[Conversation rehearsal](docs/PROMPT-REHEARSAL.md) · [Integration details](docs/INTEGRATION.md) · [Demo script and published apps](docs/DEMO.md)
 
 ```sh
 npm run typecheck
@@ -76,18 +71,16 @@ npm test
 npm run build
 ```
 
-Tests cover all three flows, room isolation/replay/reset, duplicate requests,
-and the actual Effect AI Responses + MCP adapters against local test servers.
-Live Astra access and Lovable OAuth/builds require your credentials and are not
-verified by the automated suite.
-
-State is in memory. Reconnecting restores a room's messages while the server is
-running; restarting clears them. Reset an idle room between demos. Successful
-builds are reused per scenario within a room to avoid duplicate generation.
-This backend stops at handing back the URL; generated apps own their demo data.
+Chat messages are in memory and reset on server restart. Live build receipts
+persist separately to prevent accidental duplicate projects. There is no chat
+API for synchronizing generated apps' task/order/check-in data.
 
 ## References
 
-- [Astra model](https://developers.openai.com/api/docs/models/gpt-6-astra)
 - [Lovable MCP](https://docs.lovable.dev/integrations/lovable-mcp-server)
 - [Effect AI](https://effect.website/docs/v4/ai/)
+- [Meta WhatsApp design reference](https://www.meta.com/design-at-meta/blog/whatsapp-user-interface-update/)
+
+This hackathon UI is an unofficial WhatsApp-style prototype, not a Meta product.
+
+The chat wallpaper is a [third-party WhatsApp doodle asset](https://github.com/nufrankz/whatsapp-css/blob/master/assets/data-asset-chat-background.png). The Lines mark is custom SVG based on Ao's visual direction, 6 October 2026.

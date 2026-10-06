@@ -21,28 +21,28 @@ const scenes: Record<Scenario, { goal: string; lines: Line[] }> = {
   party: {
     goal: "Help → shared supplies list → friends claim items in the app.",
     lines: [
-      { user: "sam", text: "Birthday party at mine this weekend?" },
-      { user: "jo", text: "I'm in! We need to work out who's bringing what." },
-      { user: "alex", text: "@Astra can you help us organise the party?" },
-      { user: "sam", text: "@Astra yes, let everyone claim things themselves." },
+      { user: "maya", text: "Birthday party at mine this weekend?" },
+      { user: "nina", text: "I'm in! We need to work out who's bringing what." },
+      { user: "ao", text: "@Lines can you help us organise the party?" },
+      { user: "maya", text: "@Lines yes, let everyone claim things themselves." },
     ],
   },
   wakeup: {
     goal: "Help → daily check-in with a leaderboard → friendly competition.",
     lines: [
-      { user: "alex", text: "I snoozed my alarm five times again." },
-      { user: "sam", text: "Same. We need to hold each other accountable." },
-      { user: "jo", text: "@Astra help us actually get up in the mornings." },
-      { user: "alex", text: "@Astra yes, a bit of competition would help." },
+      { user: "ao", text: "I snoozed my alarm five times again." },
+      { user: "maya", text: "Same. We need to hold each other accountable." },
+      { user: "nina", text: "@Lines help us actually get up in the mornings." },
+      { user: "ao", text: "@Lines yes, a bit of competition would help." },
     ],
   },
   boba: {
     goal: "Help → shared demo menu → one list of everyone's drink choices.",
     lines: [
-      { user: "jo", text: "Boba run? I'm getting something this afternoon." },
-      { user: "alex", text: "Yes please. We always lose everyone's order in this chat." },
-      { user: "sam", text: "@Astra can you sort out our boba order?" },
-      { user: "jo", text: "@Astra yes, that's exactly what we need." },
+      { user: "nina", text: "Boba run? I'm getting something this afternoon." },
+      { user: "ao", text: "Yes please. We always lose everyone's order in this chat." },
+      { user: "maya", text: "@Lines can you sort out our boba order?" },
+      { user: "nina", text: "@Lines yes, that's exactly what we need." },
     ],
   },
 };
@@ -78,7 +78,7 @@ function emptyState() {
   if (displayed.size) return;
   const empty = document.createElement("p");
   empty.className = "empty";
-  empty.textContent = "Start with a message between friends. Tag @Astra when you want it to join in.";
+  empty.textContent = "Start with a message between friends. Tag @Lines when you want it to join in.";
   messages.replaceChildren(empty);
 }
 function renderMessage(message: ChatMessage) {
@@ -115,7 +115,7 @@ function connect() {
     switch (event.type) {
       case "room.snapshot":
         joined = true;
-        status.textContent = busy ? "Astra is thinking…" : "Connected · tag @Astra to get a reply";
+        status.textContent = busy ? "Lines is thinking…" : "Connected · tag @Lines to get a reply";
         element("mode").textContent = event.lovableMode === "mock"
           ? `Agent: ${event.agentMode}. Builds use fixed demo links or local receipts; no new Lovable projects.`
           : `Agent: ${event.agentMode}. Live Lovable builds are enabled and create real projects.`;
@@ -125,9 +125,9 @@ function connect() {
       case "chat.message": renderMessage(event.message); break;
       case "agent.status":
         busy = event.status === "thinking";
-        status.textContent = busy ? "Astra is thinking…" : "Connected · tag @Astra to get a reply";
+        status.textContent = busy ? "Lines is thinking…" : "Connected · tag @Lines to get a reply";
         controls(); break;
-      case "site.building": case "site.ready": case "site.failed":
+      case "site.building": case "site.ready": case "site.failed": case "site.waiting":
         builds.set(event.build.id, event.build); renderBuilds(); break;
       case "error": error.textContent = event.message; break;
     }

@@ -42,7 +42,7 @@
     <main>
       <aside>
         <h2>Try a conversation</h2>
-        <p class="muted">Pick a scene. Click a suggested line to edit it, then send. Or type anything to see how Astra reacts.</p>
+        <p class="muted">Pick a scene. Click a suggested line to edit it, then send. Or type anything to see how Lines reacts.</p>
         <div class="scenarios" aria-label="Demo scene">
           <button data-scenario="party" aria-pressed="true">Party</button>
           <button data-scenario="wakeup" aria-pressed="false">Morning</button>
@@ -50,18 +50,18 @@
         </div>
         <p id="scene" class="muted"></p>
         <div id="lines"></div>
-        <div class="note muted">Only <strong>@Astra</strong> wakes the agent. Ordinary messages still give it context. Use <strong>Reset chat</strong> between experiments.</div>
+        <div class="note muted">Only <strong>@Lines</strong> wakes the agent. Ordinary messages still give it context. Use <strong>Reset chat</strong> between experiments.</div>
         <div class="note muted">Edit <code>packages/prompts/agent.md</code> to change its behaviour. The next tagged turn uses your saved changes—no restart needed.</div>
         <p id="mode" class="muted note">Connecting to the local backend…</p>
       </aside>
       <section class="chat" aria-label="Group chat">
-        <div class="chat-header"><div><strong>The group · Alex, Sam, Jo + Astra</strong><div id="status" role="status">Connecting…</div></div><button id="reset" disabled>Reset chat</button></div>
+        <div class="chat-header"><div><strong>The group · Ao, Maya, Leo, Nina + Lines</strong><div id="status" role="status">Connecting…</div></div><button id="reset" disabled>Reset chat</button></div>
         <div id="messages" role="log" aria-live="polite"></div>
         <div id="builds"></div>
         <p id="error" role="alert"></p>
         <form id="chat">
-          <select id="user" aria-label="Send as"><option value="alex">Alex</option><option value="sam">Sam</option><option value="jo">Jo</option></select>
-          <input id="text" aria-label="Message" placeholder="Message the group or tag @Astra…" autocomplete="off" required />
+          <select id="user" aria-label="Send as"><option value="ao">Ao</option><option value="maya">Maya</option><option value="nina">Nina</option><option value="leo">Leo</option></select>
+          <input id="text" aria-label="Message" placeholder="Message the group or tag @Lines…" autocomplete="off" required />
           <button id="send" disabled>Send</button>
         </form>
       </section>

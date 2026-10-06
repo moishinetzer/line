@@ -1,0 +1,45 @@
+{
+  "requestId": "replace-with-a-unique-build-id",
+  "groupId": "party",
+  "kind": "party",
+  "title": "Saturday, sorted",
+  "participants": [
+    { "id": "ao", "name": "Ao" },
+    { "id": "maya", "name": "Maya" },
+    { "id": "leo", "name": "Leo" },
+    { "id": "nina", "name": "Nina" }
+  ],
+  "initialData": {
+    "eventDate": "2026-10-10",
+    "time": "17:00",
+    "location": "Maya's place",
+    "items": [
+      {
+        "id": "drinks",
+        "name": "Something to sip",
+        "note": "Drinks for 4",
+        "emoji": "🍹",
+        "owner": "leo",
+        "done": false
+      },
+      {
+        "id": "snacks",
+        "name": "The snack situation",
+        "note": "Crisps and dips",
+        "emoji": "🥨",
+        "owner": "maya",
+        "done": false
+      },
+      {
+        "id": "ice",
+        "name": "Ice, ice, baby",
+        "note": "Two bags",
+        "emoji": "🧊",
+        "owner": null,
+        "done": false
+      }
+    ]
+  },
+  "rules": { "timezone": "Europe/London", "demoData": true },
+  "dataApiBaseUrl": "https://replace-with-your-reachable-api.example/api"
+}

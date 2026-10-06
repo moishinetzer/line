@@ -2,11 +2,11 @@ import { Context, Effect, Layer, Redacted, Schema } from "effect";
 import { Chat, Tool, Toolkit } from "effect/ai";
 import { FetchHttpClient } from "effect/http";
 import { OpenAiClient, OpenAiLanguageModel } from "@effect/ai-openai";
-import { ScenarioSchema, type ChatMessage, type Scenario } from "@group-dots/protocol";
+import { ScenarioSchema, type ChatMessage, type Scenario, type Build } from "@group-dots/protocol";
 import type { Config } from "./config.ts";
 import { readPrompt } from "./prompts.ts";
 
-export type BuildResult = { url: string; projectId?: string; mocked: boolean };
+export type BuildResult = Omit<Build, "id" | "scenario" | "status"> & { status?: Build["status"] };
 export type AgentTurn = {
   messages: ChatMessage[];
   buildSite: (scenario: Scenario) => Promise<BuildResult>;
@@ -29,12 +29,15 @@ export function agentLayer(config: Config) {
       respond: ({ messages, buildSite }) => Effect.tryPromise({
         try: async () => {
           const text = messages.at(-1)?.text ?? "";
-          const match = text.match(/^(?:@astra[,:]?\s+)?\/build\s+(party|wakeup|boba)\s*$/i);
+          const match = text.match(/^(?:@lines[,:]?\s+)?\/build\s+(party|wakeup|boba)\s*$/i);
           if (match) {
             const result = await buildSite(ScenarioSchema.parse(match[1].toLowerCase()));
+            if (result.status === "awaiting_input") return `Lovable is waiting for your plan approval. Review it here: ${result.editorUrl}. Then use Check again in the group app.`;
+            if (result.status === "checking") return `Your project is still building: ${result.editorUrl}. Use Check again to refresh the same project.`;
+            if (result.status === "failed" || !result.url) return `The build needs attention: ${result.error ?? "Check the project"}. ${result.editorUrl ?? ""}`;
             return `${result.mocked ? "Mock result" : "Your site"}: ${result.url}`;
           }
-          return "[Mock Astra] I can help with party planning, a wake-up leaderboard, or a boba order. Send @Astra /build party, @Astra /build wakeup, or @Astra /build boba to test a build.";
+          return "[Mock Lines] I can help with party planning, a wake-up leaderboard, or a boba order. Send @Lines /build party, @Lines /build wakeup, or @Lines /build boba to test a build.";
         },
         catch: toError,
       }),

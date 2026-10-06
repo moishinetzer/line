@@ -1,0 +1,931 @@
+/* Shared app designs, independent of the WhatsApp chat shell. */
+.mini-app {
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e7eadd;
+  box-shadow: 0 4px 12px #3f543705;
+  min-height: 100%;
+}
+.party-hero {
+  position: relative;
+  background: #e8ddf4;
+  padding: 23px 22px 0;
+  overflow: hidden;
+  color: #4e3c5b;
+}
+.party-date {
+  font-size: 8px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #8d7798;
+  position: relative;
+  z-index: 1;
+}
+.date-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #9b81a7;
+}
+.party-hero h2 {
+  font-family: "DM Serif Display", serif;
+  font-size: 49px;
+  font-weight: 400;
+  letter-spacing: -1.5px;
+  line-height: 0.98;
+  margin: 22px 0 14px;
+  position: relative;
+  z-index: 1;
+}
+.party-hero > p {
+  font-size: 9px;
+  line-height: 1.6;
+  color: #8b7695;
+  position: relative;
+  z-index: 1;
+  max-width: 170px;
+}
+.party-art {
+  position: absolute;
+  right: -4px;
+  top: 49px;
+  width: 161px;
+  height: 177px;
+  pointer-events: none;
+}
+.party-location {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 25px;
+  border-top: 1px solid #d8c7e5;
+  padding: 10px 0;
+  font-size: 9px;
+  color: #917d9c;
+  position: relative;
+}
+.party-location > span:last-child {
+  font-size: 12px;
+}
+.mini-body {
+  padding: 0 19px;
+}
+.together-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 17px 0 25px;
+}
+.avatar-stack {
+  display: flex;
+  padding-left: 3px;
+}
+.avatar-stack > .avatar {
+  margin-left: -3px;
+  border: 2px solid white;
+  width: 24px;
+  height: 24px;
+  font-size: 8px;
+}
+.together-row > span {
+  font-size: 9px;
+  color: #9caa91;
+}
+.list-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.list-heading h3 {
+  font-size: 12px;
+  letter-spacing: -0.2px;
+  font-weight: 600;
+}
+.list-heading > span {
+  font-size: 9px;
+  color: #91a083;
+}
+.progress-track {
+  height: 3px;
+  background: #edf1e7;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 7px;
+}
+.progress-track > span {
+  display: block;
+  height: 100%;
+  background: #a6bd86;
+  border-radius: 4px;
+  transition: width 0.3s;
+}
+.party-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 73px;
+  padding: 11px 0;
+  border-bottom: 1px solid #f0f2eb;
+}
+.item-emoji {
+  font-size: 21px;
+  min-width: 28px;
+  text-align: center;
+}
+.item-copy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.item-copy strong {
+  font-size: 10px;
+  font-weight: 500;
+}
+.item-copy > span {
+  font-size: 8px;
+  color: #a1aa98;
+  line-height: 1.4;
+}
+.item-copy > .item-person {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #83976f;
+  font-size: 8px;
+}
+.item-done .item-copy > strong {
+  color: #91a085;
+}
+.item-done .item-emoji {
+  opacity: 0.7;
+}
+.claim-button {
+  font-size: 8px;
+  color: #779262;
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  padding: 5px 7px;
+  border: 1px solid #d9e5ce;
+  border-radius: 6px;
+  white-space: nowrap;
+  background: #f9fcf5;
+}
+.claim-button:hover {
+  background: #e9f2de;
+}
+.item-actions {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+.check-button {
+  border: 1px solid #d3dec9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  color: #bdcdb0;
+}
+.check-button.checked {
+  background: #8fab71;
+  border-color: #8fab71;
+  color: #fff;
+}
+.release-button {
+  color: #aaa;
+  padding: 3px;
+}
+.add-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 9px;
+  color: #879777;
+  padding: 14px 0;
+}
+.add-item:hover {
+  color: #305f34;
+}
+.add-item-form {
+  display: flex;
+  border: 1px solid #d6e2cc;
+  border-radius: 6px;
+  margin: 9px 0;
+  padding: 5px;
+}
+.add-item-form input {
+  border: 0;
+  font-size: 10px;
+  flex: 1;
+  width: 100%;
+  padding: 3px;
+  background: none;
+  outline: none;
+}
+.add-item-form button {
+  color: #6d8d5b;
+  padding: 3px;
+}
+.app-note {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  background: #f4f7ee;
+  padding: 12px 11px;
+  border-radius: 7px;
+  margin: 7px 0 15px;
+  color: #889b71;
+}
+.app-note > span {
+  font-size: 23px;
+  line-height: 1.1;
+}
+.app-note > p {
+  font-size: 9px;
+  line-height: 1.65;
+  color: #869774;
+}
+.app-note > p > span {
+  font-size: 8px;
+  color: #a5af98;
+}
+.app-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  color: #aab39e;
+  padding: 12px 8px;
+  border-top: 1px solid #f0f2eb;
+  gap: 4px;
+}
+.app-footer > svg {
+  width: 11px;
+  height: 11px;
+  color: #aab897;
+  --flower-center: #fff;
+}
+.morning-hero {
+  background: #ffe9ab;
+  position: relative;
+  padding: 22px 24px 25px;
+  overflow: hidden;
+  color: #705522;
+}
+.club-pill {
+  font-size: 8px;
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  color: #9a7d41;
+}
+.morning-hero h2 {
+  font-family: "DM Serif Display", serif;
+  font-weight: 400;
+  font-size: 54px;
+  line-height: 0.95;
+  letter-spacing: -1.9px;
+  margin: 28px 0 15px;
+  position: relative;
+  z-index: 1;
+}
+.morning-hero p {
+  font-size: 10px;
+  line-height: 1.6;
+  color: #9b814c;
+  position: relative;
+  z-index: 1;
+}
+.sun-art {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: #fbb960;
+  right: -14px;
+  top: 82px;
+  box-shadow:
+    0 0 0 14px #ffd081,
+    0 0 0 27px #ffdd97;
+  transform: rotate(-12deg);
+}
+.sun-face {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.sun-face i {
+  position: absolute;
+  top: 46px;
+  left: 46px;
+  width: 5px;
+  height: 9px;
+  border-radius: 50%;
+  background: #9a6d2d;
+}
+.sun-face i:nth-child(2) {
+  left: 72px;
+}
+.sun-face b {
+  position: absolute;
+  top: 63px;
+  left: 52px;
+  width: 21px;
+  height: 12px;
+  border: 2px solid #9a6d2d;
+  border-top: 0;
+  border-radius: 0 0 20px 20px;
+}
+.morning-date {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  color: #8f9278;
+  margin: 20px 0 14px;
+}
+.morning-date > span {
+  font-size: 8px;
+  color: #b0b49c;
+}
+.wake-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  background: #edb745;
+  color: #6a4b17;
+  border-radius: 9px;
+  padding: 15px 12px;
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow: 0 3px 0 #daa134;
+}
+.wake-button > svg:last-child {
+  margin-left: auto;
+}
+.wake-button > svg:first-child {
+  margin-right: auto;
+}
+.wake-button.is-awake {
+  background: #eff2df;
+  box-shadow: none;
+  color: #7a8b58;
+  opacity: 1;
+}
+.wake-button.is-awake > svg:first-child {
+  margin-right: 0;
+  margin-left: 0;
+}
+.wake-hint {
+  font-size: 8px;
+  text-align: center;
+  color: #aba98f;
+  margin: 13px 0 26px;
+}
+.morning-app .list-heading {
+  color: #796a3d;
+}
+.morning-app .list-heading > svg {
+  color: #c9a755;
+}
+.leader-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 13px 8px;
+  border-bottom: 1px solid #f0f1e7;
+}
+.leader-row.is-you {
+  background: #fcfaed;
+  border-radius: 7px;
+}
+.rank {
+  width: 11px;
+  text-align: center;
+  font-size: 9px;
+  color: #aaa58d;
+}
+.leader-name {
+  flex: 1;
+  font-size: 10px;
+  font-weight: 500;
+  min-width: 0;
+}
+.leader-name > small {
+  display: inline;
+  font-size: 8px;
+  color: #aaa384;
+  margin-left: 6px;
+  font-weight: 400;
+}
+.leader-name > span {
+  display: block;
+  font-size: 8px;
+  color: #b0ad97;
+  margin-top: 4px;
+  font-weight: 400;
+}
+.leader-row > strong {
+  font-size: 16px;
+  font-weight: 500;
+  color: #99833f;
+}
+.leader-row > strong > small {
+  display: block;
+  font-size: 7px;
+  font-weight: 400;
+  color: #b8b29a;
+  text-align: center;
+}
+.morning-app .app-note {
+  margin-top: 20px;
+  background: #fbf8e9;
+  color: #b8a062;
+}
+.morning-app .app-note p {
+  color: #a59666;
+}
+.morning-app .app-note p > span {
+  color: #b9b291;
+}
+.boba-hero {
+  padding: 24px 22px 0;
+  background: #f1dce8;
+  color: #774c69;
+  position: relative;
+  overflow: hidden;
+}
+.boba-hero .club-pill {
+  color: #ad839e;
+}
+.boba-hero h2 {
+  font-family: "DM Serif Display", serif;
+  font-weight: 400;
+  font-size: 49px;
+  letter-spacing: -1.8px;
+  margin-top: 26px;
+  position: relative;
+  z-index: 1;
+}
+.boba-hero p {
+  font-size: 10px;
+  color: #a77e98;
+  position: relative;
+  z-index: 1;
+  margin-top: 6px;
+}
+.boba-hero-star {
+  position: absolute;
+  right: 6px;
+  top: 49px;
+  font-size: 109px;
+  color: #e5bbd1;
+  line-height: 1;
+  transform: rotate(17deg);
+}
+.menu-label {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+  padding: 12px 0;
+  font-size: 9px;
+  color: #a67d97;
+  border-top: 1px solid #e7cbdc;
+}
+.menu-label > span {
+  color: #b991a9;
+  font-size: 8px;
+}
+.drinks-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
+  margin-top: 21px;
+}
+.drink-option {
+  padding: 0;
+  text-align: center;
+}
+.drink-picture {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 114px;
+  border-radius: 9px;
+  border: 1.5px solid transparent;
+}
+.drink-picture.caramel {
+  background: #f4ebdc;
+}
+.drink-picture.matcha {
+  background: #e9eedc;
+}
+.drink-picture.taro {
+  background: #ece4f2;
+}
+.selected .drink-picture {
+  border-color: #976184;
+  box-shadow: 0 0 0 2px #fff inset;
+}
+.drink-selected {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  border-radius: 50%;
+  background: #a17296;
+  color: #fff;
+  width: 17px;
+  height: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.drink-option > strong {
+  display: block;
+  font-size: 9px;
+  font-weight: 500;
+  margin-top: 9px;
+  color: #836177;
+  white-space: nowrap;
+}
+.drink-option > span {
+  display: block;
+  font-size: 8px;
+  color: #ba9bad;
+  margin-top: 4px;
+}
+.boba-cup {
+  position: relative;
+  width: 40px;
+  height: 59px;
+  transform: rotate(-7deg);
+  margin-top: 15px;
+  --liquid: #ba875a;
+  --cup: #e6bf93;
+}
+.boba-cup.matcha {
+  --liquid: #a1ae75;
+  --cup: #ccd4a9;
+  transform: rotate(6deg);
+}
+.boba-cup.taro {
+  --liquid: #ac90bf;
+  --cup: #d7c4e6;
+  transform: rotate(-5deg);
+}
+.boba-straw {
+  position: absolute;
+  height: 40px;
+  width: 5px;
+  background: #b1907c;
+  top: -26px;
+  left: 22px;
+  transform: rotate(7deg);
+}
+.matcha .boba-straw {
+  background: #869768;
+}
+.taro .boba-straw {
+  background: #9273a3;
+}
+.boba-lid {
+  width: 46px;
+  height: 5px;
+  border-radius: 4px;
+  background: #faf6eb;
+  position: absolute;
+  z-index: 1;
+  left: -3px;
+  top: -3px;
+  box-shadow: 0 1px 2px #79654230;
+}
+.boba-liquid {
+  height: 59px;
+  width: 40px;
+  background: linear-gradient(var(--cup) 0 17%, var(--liquid) 17%);
+  clip-path: polygon(0 0, 100% 0, 90% 100%, 10% 100%);
+  border-radius: 0 0 8px 8px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 4px 0 #ffffff2b;
+}
+.boba-liquid > span {
+  display: block;
+  text-align: center;
+  font-family: "DM Serif Display", serif;
+  font-size: 10px;
+  line-height: 0.9;
+  color: #fff9e6;
+  margin-top: 15px;
+  transform: rotate(-8deg);
+  opacity: 0.9;
+}
+.pearls {
+  position: absolute;
+  bottom: 3px;
+  left: 6px;
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+  width: 28px;
+  justify-content: center;
+  transform: rotate(9deg);
+}
+.pearls > i {
+  display: block;
+  width: 5px;
+  height: 5px;
+  background: #584a41;
+  border-radius: 50%;
+}
+.drink-description {
+  text-align: center;
+  font-size: 8px;
+  color: #b39bab;
+  margin: 12px 0 18px;
+}
+.order-options {
+  display: flex;
+  gap: 11px;
+}
+.order-options > label {
+  flex: 1;
+  font-size: 9px;
+  color: #a18398;
+}
+.order-options select {
+  display: block;
+  width: 100%;
+  background: #fcf8fa;
+  border: 1px solid #eddfe7;
+  border-radius: 6px;
+  padding: 9px 6px;
+  font-size: 10px;
+  color: #88647a;
+  margin-top: 7px;
+}
+.order-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  gap: 6px;
+  border-radius: 7px;
+  background: #916282;
+  color: #fff7fc;
+  font-size: 11px;
+  padding: 12px;
+  margin-top: 14px;
+}
+.order-button:disabled {
+  opacity: 1;
+  background: #f0e8ed;
+  color: #aa8ba0;
+}
+.order-heading {
+  margin-top: 25px;
+  margin-bottom: 5px;
+}
+.boba-app h3 {
+  color: #816277;
+}
+.boba-app .list-heading > span {
+  color: #b293a7;
+}
+.order-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f4ebf0;
+}
+.order-row > div {
+  flex: 1;
+}
+.order-row strong {
+  display: block;
+  font-size: 9px;
+  font-weight: 500;
+  color: #96798a;
+}
+.order-row > div > span {
+  display: block;
+  font-size: 8px;
+  color: #bca5b3;
+  margin-top: 4px;
+  line-height: 1.5;
+}
+.order-row > span:last-child {
+  font-size: 9px;
+  color: #a5899a;
+}
+.order-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 0 19px;
+  width: 100%;
+  color: #9c728d;
+  font-size: 9px;
+}
+.order-total > span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.order-total > strong {
+  font-weight: 600;
+  color: #805a70;
+  font-size: 12px;
+}
+.order-summary {
+  padding: 13px;
+  background: #fbf3f8;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+.order-summary strong {
+  font-size: 10px;
+  color: #805a70;
+  line-height: 1.5;
+  display: block;
+}
+.order-summary p {
+  font-size: 9px;
+  color: #a38999;
+  white-space: pre-line;
+  line-height: 1.7;
+  margin: 9px 0;
+}
+.order-summary small {
+  font-size: 8px;
+  color: #b198a8;
+  line-height: 1.5;
+  display: block;
+}
+.empty-orders {
+  font-size: 10px;
+  line-height: 1.7;
+  color: #b298a8;
+  padding: 14px 0;
+}
+.boba-app .app-footer {
+  color: #b79dae;
+  border-color: #f2e9ee;
+}
+.boba-app .app-footer svg {
+  color: #b49bac;
+}
+.party-date {
+  font-size: 10px;
+  color: #80678e;
+}
+.party-hero > p {
+  font-size: 11px;
+  color: #80658d;
+}
+.party-location {
+  font-size: 10px;
+  color: #80658d;
+}
+.together-row > span {
+  font-size: 10px;
+  color: #7c8c6b;
+}
+.list-heading h3 {
+  font-size: 13px;
+}
+.list-heading > span {
+  font-size: 10px;
+  color: #7b8d6c;
+}
+.item-copy strong {
+  font-size: 12px;
+}
+.item-copy > span {
+  font-size: 10px;
+  color: #859475;
+}
+.item-copy > .item-person {
+  font-size: 9px;
+  color: #758e5e;
+}
+.item-done .item-copy > strong {
+  color: #7c8d6a;
+}
+.claim-button {
+  font-size: 9px;
+  color: #67834f;
+}
+.add-item {
+  font-size: 11px;
+  color: #73875e;
+}
+.app-note > p {
+  font-size: 10px;
+  color: #75895e;
+}
+.app-note > p > span {
+  font-size: 9px;
+  color: #859673;
+}
+.app-footer {
+  font-size: 9px;
+  color: #879876;
+}
+.club-pill {
+  font-size: 10px;
+}
+.morning-date {
+  font-size: 10px;
+  color: #877b52;
+}
+.morning-date > span {
+  font-size: 9px;
+  color: #9c9273;
+}
+.wake-hint {
+  font-size: 10px;
+  color: #94845a;
+}
+.leader-name {
+  font-size: 12px;
+}
+.leader-name > span {
+  font-size: 10px;
+  color: #94896a;
+}
+.leader-name > small {
+  font-size: 9px;
+  color: #958564;
+}
+.morning-app .app-note p {
+  color: #988449;
+}
+.morning-app .app-note p > span {
+  color: #9b8f69;
+}
+.boba-hero p {
+  font-size: 11px;
+  color: #956680;
+}
+.boba-hero .club-pill,
+.menu-label {
+  color: #996781;
+}
+.menu-label {
+  font-size: 10px;
+}
+.menu-label > span {
+  font-size: 9px;
+  color: #a57791;
+}
+.drink-option > strong {
+  font-size: 10px;
+}
+.drink-option > span {
+  font-size: 10px;
+  color: #a47792;
+}
+.drink-description {
+  font-size: 10px;
+  color: #99758a;
+}
+.order-options > label {
+  font-size: 11px;
+}
+.order-options select {
+  font-size: 11px;
+}
+.order-row strong {
+  font-size: 11px;
+}
+.order-row > div > span {
+  font-size: 9px;
+  color: #a38999;
+}
+.order-row > span:last-child {
+  font-size: 10px;
+}
+.order-total {
+  font-size: 10px;
+}
+.boba-app .app-footer {
+  color: #a18396;
+}
+.app-note > p > span {
+  line-height: 1.6;
+}

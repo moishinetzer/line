@@ -34,7 +34,7 @@ test("Astra Responses tool loop calls MCP with each fixed prompt and returns its
     return { structuredContent: { projectId: "project-test", status: "completed" }, content: [{ type: "text", text: "Created" }] };
   });
   mcp.registerTool("get_project", { inputSchema: { project_id: z.string() } }, async () => ({
-    structuredContent: { project: { id: "project-test", preview_url: "https://demo.example.test/preview" } },
+    structuredContent: { project: { id: "project-test", agentFinished: true, preview_url: "https://demo.example.test/preview" } },
     content: [{ type: "text", text: "Preview" }],
   }));
   const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: () => "test-session", enableJsonResponse: true });
