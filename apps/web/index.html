@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Group Dots · integration starter</title>
+    <style>
+      body { font: 15px system-ui; background: #f6f7f9; color: #172124; margin: 32px auto; max-width: 860px; padding: 0 20px; }
+      h1 { margin-bottom: 8px; } p { color: #5d676c; }
+      form, nav { display: flex; gap: 8px; margin: 16px 0; flex-wrap: wrap; }
+      input, select, button { padding: 10px 14px; border: 1px solid #cdd4d8; border-radius: 8px; font: inherit; }
+      input { flex: 1; } button { cursor: pointer; background: white; } button:disabled { opacity: .5; }
+      #messages { min-height: 250px; max-height: 420px; overflow: auto; background: white; border-radius: 12px; padding: 20px; }
+      .message { padding: 10px 0; white-space: pre-wrap; border-bottom: 1px solid #eef0f2; }
+      .assistant { color: #067658; } #status { font-size: 13px; } #error { color: #b3261e; }
+      #builds a { display: block; padding: 12px; background: #e0f4ec; margin: 8px 0; border-radius: 8px; color: #145a43; }
+      pre { max-height: 260px; overflow: auto; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <h1>Group Dots</h1>
+    <p>WebSocket integration starter. Replace this page with the WhatsApp mock.</p>
+    <div id="status">Connecting…</div>
+    <nav>
+      <select id="user"><option value="alex">Alex</option><option value="sam">Sam</option><option value="jo">Jo</option></select>
+      <button id="reset" disabled>Reset demo</button>
+      <button data-scenario="party" disabled>Build party</button>
+      <button data-scenario="wakeup" disabled>Build wakeup</button>
+      <button data-scenario="boba" disabled>Build boba</button>
+    </nav>
+    <p id="error" role="alert"></p>
+    <section id="messages" aria-live="polite"></section>
+    <section id="builds"></section>
+    <form id="chat"><input id="text" placeholder="Message the group…" autocomplete="off" required /><button id="send" disabled>Send</button></form>
+    <details><summary>Protocol events</summary><pre id="events"></pre></details>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
