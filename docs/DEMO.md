@@ -13,7 +13,8 @@ be cut from the recording.
 | `@Astra` trigger | Tested; untagged messages remain context without calling the model |
 | Party: chat → Astra tool → Lovable → preview | Verified live on 6 October 2026 |
 | Wake-up and boba adapter flows | Passing against local test servers; real builds pending |
-| WhatsApp mock and final prompt content | Awaiting teammate's changes |
+| Conversation flow for all three scenarios | Verified with live Astra and mocked builds; rehearsal page ready |
+| WhatsApp mock and final Lovable prompt content | Awaiting teammate's changes |
 
 Verified party preview:
 https://id-preview--528877cf-f6fc-400a-b103-2c9b0c01985e.lovable.app
@@ -25,7 +26,7 @@ backend route and page load; it is not a full acceptance test of every control.
 ## Merge handoff
 
 - UI belongs in `apps/web/`; the current page is a disposable integration starter.
-- Conversation instructions belong in `packages/prompts/agent.md`.
+- Moishi owns conversation instructions in `packages/prompts/agent.md`.
 - The three fixed build prompts are `party.md`, `wakeup.md`, and `boba.md` in the
   same directory. The backend sends them unchanged, without chat interpolation.
 - Follow [INTEGRATION.md](INTEGRATION.md) and import `@group-dots/protocol` for types.
@@ -37,6 +38,9 @@ After merging, run `npm install`, `npm run build`, and `npm test`.
 Then run `npm run dev` and open http://localhost:5173.
 Local credentials are deliberately excluded from Git; another machine must
 configure its own root `.env` and complete Lovable OAuth.
+
+For prompt iteration, use `npm run dev:rehearsal` and open
+http://localhost:5173/rehearsal.html. See [PROMPT-REHEARSAL.md](PROMPT-REHEARSAL.md).
 
 ## Capture flow
 

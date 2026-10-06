@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Line · Prompt rehearsal</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #f3f5f1; color: #20372d; font: 15px/1.5 system-ui, sans-serif; }
+      button, input, select { font: inherit; }
+      button, select { cursor: pointer; }
+      button { border: 1px solid #cbd7cc; background: white; color: inherit; border-radius: 9px; padding: 10px 14px; }
+      button:hover { background: #edf4eb; } button:disabled { cursor: default; opacity: .45; }
+      a { color: #166849; } .muted { color: #637469; font-size: 13px; }
+      header { max-width: 1180px; margin: 28px auto 20px; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+      h1 { font-size: 24px; margin: 0; letter-spacing: -.7px; } h1 span { font-weight: 400; color: #718174; font-size: 17px; margin-left: 10px; }
+      main { max-width: 1180px; margin: auto; padding: 0 24px 28px; display: grid; grid-template-columns: 320px 1fr; gap: 22px; }
+      aside, .chat { border: 1px solid #dce4da; border-radius: 16px; background: white; overflow: hidden; }
+      aside { padding: 22px; align-self: start; } h2 { font-size: 17px; margin: 0 0 8px; } p { margin: 8px 0 18px; }
+      .scenarios { display: flex; gap: 6px; margin: 18px 0; } .scenarios button { flex: 1; padding: 8px; font-size: 13px; }
+      .scenarios button[aria-pressed="true"] { background: #24583f; color: white; border-color: #24583f; }
+      #lines { display: grid; gap: 9px; } .line { text-align: left; font-size: 13px; line-height: 1.5; padding: 12px; } .line strong { display: block; margin-bottom: 3px; }
+      .note { margin-top: 22px; padding-top: 16px; border-top: 1px solid #e6ebe3; }
+      code { font-size: 12px; overflow-wrap: anywhere; }
+      .chat { display: flex; flex-direction: column; min-height: 630px; height: min(740px, calc(100vh - 120px)); }
+      .chat-header { padding: 18px 22px; border-bottom: 1px solid #dce4da; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+      #status { font-size: 12px; color: #627365; margin-top: 3px; }
+      #messages { flex: 1; overflow: auto; padding: 22px; background: #f0f3ec; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
+      .empty { color: #6b7c6c; text-align: center; align-self: center; margin: auto; max-width: 290px; }
+      .message { max-width: 87%; padding: 10px 14px; border-radius: 12px 12px 3px 12px; background: #dcebcf; overflow-wrap: anywhere; }
+      .message.assistant { align-self: flex-start; background: white; border-radius: 12px 12px 12px 3px; }
+      .message strong { display: block; font-size: 12px; color: #517249; margin-bottom: 3px; } .message p { margin: 0; white-space: pre-wrap; }
+      #builds { padding: 0 18px; } .build { display: block; margin: 10px 0; padding: 12px; border: 1px solid #c5d9b9; border-radius: 9px; font-size: 13px; }
+      #error { color: #a02e24; font-size: 13px; margin: 0; padding: 0 18px; }
+      form { display: flex; gap: 8px; padding: 18px; } input, select { min-width: 0; padding: 10px; border: 1px solid #cbd7cc; border-radius: 8px; background: white; color: inherit; }
+      input { flex: 1; width: 100%; } #send { background: #24583f; color: white; border-color: #24583f; }
+      @media(max-width: 780px) { main { grid-template-columns: 1fr; padding: 0 12px 20px; } header { padding: 0 14px; } aside { padding: 16px; } .chat { height: 650px; min-height: 500px; } h1 span { display: block; margin: 0; } form { flex-wrap: wrap; } }
+    </style>
+  </head>
+  <body>
+    <header><h1>Line <span>Prompt rehearsal</span></h1><a href="/">Open main demo →</a></header>
+    <main>
+      <aside>
+        <h2>Try a conversation</h2>
+        <p class="muted">Pick a scene. Click a suggested line to edit it, then send. Or type anything to see how Astra reacts.</p>
+        <div class="scenarios" aria-label="Demo scene">
+          <button data-scenario="party" aria-pressed="true">Party</button>
+          <button data-scenario="wakeup" aria-pressed="false">Morning</button>
+          <button data-scenario="boba" aria-pressed="false">Boba</button>
+        </div>
+        <p id="scene" class="muted"></p>
+        <div id="lines"></div>
+        <div class="note muted">Only <strong>@Astra</strong> wakes the agent. Ordinary messages still give it context. Use <strong>Reset chat</strong> between experiments.</div>
+        <div class="note muted">Edit <code>packages/prompts/agent.md</code> to change its behaviour. The next tagged turn uses your saved changes—no restart needed.</div>
+        <p id="mode" class="muted note">Connecting to the local backend…</p>
+      </aside>
+      <section class="chat" aria-label="Group chat">
+        <div class="chat-header"><div><strong>The group · Alex, Sam, Jo + Astra</strong><div id="status" role="status">Connecting…</div></div><button id="reset" disabled>Reset chat</button></div>
+        <div id="messages" role="log" aria-live="polite"></div>
+        <div id="builds"></div>
+        <p id="error" role="alert"></p>
+        <form id="chat">
+          <select id="user" aria-label="Send as"><option value="alex">Alex</option><option value="sam">Sam</option><option value="jo">Jo</option></select>
+          <input id="text" aria-label="Message" placeholder="Message the group or tag @Astra…" autocomplete="off" required />
+          <button id="send" disabled>Send</button>
+        </form>
+      </section>
+    </main>
+    <script type="module" src="/src/rehearsal.ts"></script>
+  </body>
+</html>

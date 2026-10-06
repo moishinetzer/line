@@ -24,13 +24,16 @@ the `DEMO_*_URL` variables to return prebuilt sites instead.
 
 | Owner | Files |
 | --- | --- |
-| Backend | `apps/server/` |
-| WhatsApp UI | Replace `apps/web/` |
-| Conversation + Lovable prompts | `packages/prompts/*.md` |
+| Moishi: backend + conversation | `apps/server/`, `packages/prompts/agent.md` |
+| Teammate: WhatsApp UI | Main page in `apps/web/` |
+| Teammate: Lovable prompts | `packages/prompts/party.md`, `wakeup.md`, `boba.md` |
+| Prompt rehearsal | `apps/web/rehearsal.html`, `apps/web/src/rehearsal.ts` |
 | Shared contract | `packages/protocol/src/index.ts` |
 
 **Frontend teammate: start with [docs/INTEGRATION.md](docs/INTEGRATION.md).**
 For the recording and verified live-build status, see [docs/DEMO.md](docs/DEMO.md).
+To tune the chat prompt with live Astra and fixed build results, see
+[docs/PROMPT-REHEARSAL.md](docs/PROMPT-REHEARSAL.md).
 You can run only the UI with `npm run dev:web` or only the backend with
 `npm run dev:server`. Prompt edits are loaded on the next request, without a restart.
 

@@ -3,7 +3,9 @@
 Run `npm install` then `npm run dev`. The server is `http://localhost:3001`;
 the replaceable frontend starter is `http://localhost:5173`.
 
-Your files: `apps/web/` and `packages/prompts/*.md`. Backend files: `apps/server/`.
+Frontend teammate: the main UI in `apps/web/` and the three Lovable prompts in
+`packages/prompts/`. Moishi owns `packages/prompts/agent.md` and backend files in
+`apps/server/`. `rehearsal.html` is a separate prompt playground.
 Shared types and runtime validation: `@group-dots/protocol`.
 Prompt files are read on every request/build, so editing prompts needs no restart.
 
