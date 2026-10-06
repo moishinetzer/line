@@ -10,44 +10,56 @@ const sendButton = element<HTMLButtonElement>("send");
 const resetButton = element<HTMLButtonElement>("reset");
 const builds = new Map<string, Build>();
 const displayed = new Set<string>();
-const roomId = "prompt-rehearsal";
+let activeScenario: Scenario = "party";
+let roomId = "prompt-rehearsal-party";
 let socket: WebSocket;
 let joined = false;
 let busy = false;
 let selectedUser = user.value;
+const seedingRooms = new Set<string>();
+const drafts = new Map<Scenario, Line>();
+const astraTag = /(^|[\s([{])@astra(?=$|[\s.,!?;:)\]}])/i;
 
 type Line = { user: string; text: string };
-const scenes: Record<Scenario, { goal: string; lines: Line[] }> = {
+const scenes: Record<Scenario, { title: string; goal: string; opening: Line[]; lines: Line[] }> = {
   party: {
-    goal: "Help → shared supplies list → friends claim items in the app.",
+    title: "Weekend party",
+    goal: "Ask for help → Astra clarifies → agree → open the shared supplies list.",
+    opening: [
+      { user: "sam", text: "Party at mine this weekend?" },
+      { user: "jo", text: "I'm in. Who's bringing what?" },
+    ],
     lines: [
-      { user: "sam", text: "Birthday party at mine this weekend?" },
-      { user: "jo", text: "I'm in! We need to work out who's bringing what." },
-      { user: "alex", text: "@Astra can you help us organise the party?" },
-      { user: "sam", text: "@Astra yes, let everyone claim things themselves." },
+      { user: "alex", text: "@Astra help us organise the party?" },
+      { user: "sam", text: "@Astra yes, make it." },
     ],
   },
   wakeup: {
-    goal: "Help → daily check-in with a leaderboard → friendly competition.",
+    title: "Morning challenge",
+    goal: "Request the leaderboard → open the app → tap “I'm up”.",
+    opening: [
+      { user: "alex", text: "Snoozed my alarm again." },
+      { user: "sam", text: "We need some competition." },
+    ],
     lines: [
-      { user: "alex", text: "I snoozed my alarm five times again." },
-      { user: "sam", text: "Same. We need to hold each other accountable." },
-      { user: "jo", text: "@Astra help us actually get up in the mornings." },
-      { user: "alex", text: "@Astra yes, a bit of competition would help." },
+      { user: "jo", text: "@Astra build us a morning check-in leaderboard." },
     ],
   },
   boba: {
-    goal: "Help → shared demo menu → one list of everyone's drink choices.",
+    title: "Boba run",
+    goal: "Request the shared order list → pick a drink → show the group summary.",
+    opening: [
+      { user: "jo", text: "Boba run?" },
+      { user: "alex", text: "Yes! Everyone's order gets lost here." },
+    ],
     lines: [
-      { user: "jo", text: "Boba run? I'm getting something this afternoon." },
-      { user: "alex", text: "Yes please. We always lose everyone's order in this chat." },
-      { user: "sam", text: "@Astra can you sort out our boba order?" },
-      { user: "jo", text: "@Astra yes, that's exactly what we need." },
+      { user: "sam", text: "@Astra make us a shared boba order list." },
     ],
   },
 };
 
 function scene(scenario: Scenario) {
+  element("group-name").textContent = scenes[scenario].title;
   element("scene").textContent = scenes[scenario].goal;
   document.querySelectorAll<HTMLButtonElement>("[data-scenario]").forEach((button) => {
     button.setAttribute("aria-pressed", String(button.dataset.scenario === scenario));
@@ -58,9 +70,26 @@ function scene(scenario: Scenario) {
     const title = document.createElement("strong");
     title.textContent = `${index + 1}. ${line.user[0].toUpperCase()}${line.user.slice(1)}`;
     button.append(title, line.text);
-    button.onclick = () => { user.value = line.user; input.value = line.text; input.focus(); };
+    button.onclick = () => { fillDraft(line); input.focus(); };
     return button;
   }));
+}
+
+function fillDraft(line: Line) {
+  user.value = line.user;
+  input.value = line.text;
+}
+function switchChat(scenario: Scenario) {
+  if (scenario === activeScenario) return;
+  drafts.set(activeScenario, { user: user.value, text: input.value });
+  activeScenario = scenario;
+  roomId = `prompt-rehearsal-${scenario}`;
+  joined = false; busy = false;
+  error.textContent = ""; status.textContent = "Opening chat…";
+  displayed.clear(); messages.replaceChildren(); builds.clear(); renderBuilds();
+  scene(scenario);
+  fillDraft(drafts.get(scenario) ?? scenes[scenario].lines[0]);
+  controls(); join();
 }
 
 function send(event: ClientEvent) {
@@ -74,11 +103,29 @@ function controls() {
   sendButton.disabled = !joined || busy;
   resetButton.disabled = !joined || busy;
 }
+function seedOpening(snapshot: Extract<ServerEvent, { type: "room.snapshot" }>) {
+  const opening = scenes[activeScenario].opening;
+  const id = (index: number) => `recording-opening-${activeScenario}-${index}`;
+  const existing = new Set(snapshot.messages.map((message) => message.id));
+  if (opening.every((_, index) => existing.has(id(index)))) {
+    seedingRooms.delete(roomId);
+    return;
+  }
+  if (seedingRooms.has(roomId)) return;
+  seedingRooms.add(roomId);
+  joined = false;
+  opening.forEach((line, index) => {
+    if (existing.has(id(index))) return;
+    send({ type: "room.join", roomId, user: { id: line.user, name: line.user[0].toUpperCase() + line.user.slice(1) } });
+    send({ type: "chat.send", id: id(index), text: line.text });
+  });
+  join();
+}
 function emptyState() {
   if (displayed.size) return;
   const empty = document.createElement("p");
   empty.className = "empty";
-  empty.textContent = "Start with a message between friends. Tag @Astra when you want it to join in.";
+  empty.textContent = "Loading the opening messages…";
   messages.replaceChildren(empty);
 }
 function renderMessage(message: ChatMessage) {
@@ -112,15 +159,21 @@ function connect() {
   socket.onopen = join;
   socket.onmessage = ({ data }) => {
     const event: ServerEvent = JSON.parse(data);
+    if ("roomId" in event && event.roomId !== roomId) return;
     switch (event.type) {
       case "room.snapshot":
         joined = true;
+        // Rejoining a chat may happen after its thinking event was sent.
+        busy = event.messages.some((message) => message.role === "user" && astraTag.test(message.text)
+          && !event.messages.some((reply) => reply.replyTo === message.id));
         status.textContent = busy ? "Astra is thinking…" : "Connected · tag @Astra to get a reply";
         element("mode").textContent = event.lovableMode === "mock"
           ? `Agent: ${event.agentMode}. Builds use fixed demo links or local receipts; no new Lovable projects.`
           : `Agent: ${event.agentMode}. Live Lovable builds are enabled and create real projects.`;
         displayed.clear(); messages.replaceChildren(); event.messages.forEach(renderMessage); emptyState();
         builds.clear(); event.builds.forEach((build) => builds.set(build.id, build)); renderBuilds();
+        seedOpening(event);
+        if (seedingRooms.has(roomId)) joined = false;
         controls(); break;
       case "chat.message": renderMessage(event.message); break;
       case "agent.status":
@@ -133,7 +186,7 @@ function connect() {
     }
   };
   socket.onclose = () => {
-    joined = false; busy = false; controls();
+    joined = false; busy = false; seedingRooms.clear(); controls();
     status.textContent = "Reconnecting…"; setTimeout(connect, 1000);
   };
 }
@@ -142,11 +195,20 @@ element("chat").addEventListener("submit", (event) => {
   if (!joined || busy || !input.value.trim()) return;
   if (selectedUser !== user.value) join();
   error.textContent = "";
-  send({ type: "chat.send", id: crypto.randomUUID(), text: input.value.trim() });
-  input.value = ""; input.focus();
+  const text = input.value.trim();
+  const index = scenes[activeScenario].lines.findIndex((line) => line.user === user.value && line.text === text);
+  send({ type: "chat.send", id: crypto.randomUUID(), text });
+  if (astraTag.test(text)) { busy = true; controls(); }
+  const next = index < 0 ? undefined : scenes[activeScenario].lines[index + 1];
+  if (next) fillDraft(next); else input.value = "";
+  input.focus();
 });
-resetButton.onclick = () => { error.textContent = ""; send({ type: "room.reset" }); };
+resetButton.onclick = () => {
+  error.textContent = "";
+  fillDraft(scenes[activeScenario].lines[0]);
+  send({ type: "room.reset" });
+};
 document.querySelectorAll<HTMLButtonElement>("[data-scenario]").forEach((button) => {
-  button.onclick = () => scene(button.dataset.scenario as Scenario);
+  button.onclick = () => switchChat(button.dataset.scenario as Scenario);
 });
-scene("party"); emptyState(); connect();
+scene(activeScenario); fillDraft(scenes[activeScenario].lines[0]); emptyState(); connect();

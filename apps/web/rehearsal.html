@@ -41,21 +41,22 @@
     <header><h1>Line <span>Prompt rehearsal</span></h1><a href="/">Open main demo →</a></header>
     <main>
       <aside>
-        <h2>Try a conversation</h2>
-        <p class="muted">Pick a scene. Click a suggested line to edit it, then send. Or type anything to see how Astra reacts.</p>
-        <div class="scenarios" aria-label="Demo scene">
+        <h2>Group chats</h2>
+        <p class="muted">Each chat opens with the recording's first messages. Switch groups anytime; each keeps its own conversation.</p>
+        <div class="scenarios" aria-label="Group chats">
           <button data-scenario="party" aria-pressed="true">Party</button>
           <button data-scenario="wakeup" aria-pressed="false">Morning</button>
           <button data-scenario="boba" aria-pressed="false">Boba</button>
         </div>
         <p id="scene" class="muted"></p>
+        <h2>Next lines to record</h2>
         <div id="lines"></div>
-        <div class="note muted">Only <strong>@Astra</strong> wakes the agent. Ordinary messages still give it context. Use <strong>Reset chat</strong> between experiments.</div>
+        <div class="note muted">The next line is ready in the message box. Edit it or press <strong>Send</strong>. Only <strong>@Astra</strong> wakes the agent. <strong>Reset chat</strong> restores this group's opening messages.</div>
         <div class="note muted">Edit <code>packages/prompts/agent.md</code> to change its behaviour. The next tagged turn uses your saved changes—no restart needed.</div>
         <p id="mode" class="muted note">Connecting to the local backend…</p>
       </aside>
       <section class="chat" aria-label="Group chat">
-        <div class="chat-header"><div><strong>The group · Alex, Sam, Jo + Astra</strong><div id="status" role="status">Connecting…</div></div><button id="reset" disabled>Reset chat</button></div>
+        <div class="chat-header"><div><strong id="group-name">Weekend party</strong><div class="muted">Alex, Sam, Jo + Astra</div><div id="status" role="status">Connecting…</div></div><button id="reset" disabled>Reset chat</button></div>
         <div id="messages" role="log" aria-live="polite"></div>
         <div id="builds"></div>
         <p id="error" role="alert"></p>

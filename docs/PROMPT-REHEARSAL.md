@@ -7,16 +7,22 @@ Lovable, regardless of the mode values in `.env`; no new Lovable projects are
 created. Set `DEMO_PARTY_URL`, `DEMO_WAKEUP_URL`, and `DEMO_BOBA_URL` to reuse ready
 sites. Without a URL, that scenario returns a clearly labelled local receipt.
 
-Pick a scene, click a suggested line, and send it. The first two lines are ordinary
-friends talking. The third tags Astra with a vague request; it should ask one
-short clarifying question. The fourth accepts the proposal and triggers the
-matching app. These are editable suggestions, not scripted assistant responses.
-Astra generates every reply.
+Party, Morning, and Boba are separate group chats. Each is prefilled with the two
+opening messages from the recording script, and the next human line is ready in
+the composer. Switching groups preserves their messages, builds, and unsent
+drafts. Reset restores only the active group's opening messages and first draft.
+
+Party shows the clarification flow: send the request, wait for Astra's question,
+then send the prefilled yes. Morning and Boba use explicit build requests so the
+recording can spend more time inside the apps. The suggestions remain editable;
+Astra generates every assistant reply. Opening a chat never calls Astra or builds
+a site by itself.
 
 Edit `packages/prompts/agent.md`, save, and reset the chat to try another flow.
 The file reloads for every tagged request. Resetting removes earlier responses
-that could otherwise influence the new experiment. The rehearsal room is
-separate from the main demo room.
+that could otherwise influence the new experiment. The three rehearsal rooms
+are separate from the main demo room. Histories survive switches and page reloads
+while the server is running; restarting the backend clears them.
 
 Try freeform messages too: explicit build requests should skip clarification;
 an explicit “wait for Sam” should wait; untagged chatter should get no reply.
