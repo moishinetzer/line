@@ -64,8 +64,12 @@ export async function startServer(config: Config) {
   }
 
   async function respond(room: Room, message: ChatMessage) {
-    broadcast(room, { type: "agent.status", roomId: room.id, requestId: message.id, status: "thinking" });
     room.context.push(message);
+    if (!/(^|[\s([{])@astra(?=$|[\s.,!?;:)\]}])/i.test(message.text)) {
+      room.pending--;
+      return;
+    }
+    broadcast(room, { type: "agent.status", roomId: room.id, requestId: message.id, status: "thinking" });
     try {
       const text = await runtime.runPromise(Effect.flatMap(Agent, (agent) => agent.respond({
         messages: [...room.context],

@@ -29,12 +29,12 @@ export function agentLayer(config: Config) {
       respond: ({ messages, buildSite }) => Effect.tryPromise({
         try: async () => {
           const text = messages.at(-1)?.text ?? "";
-          const match = text.match(/^\/build\s+(party|wakeup|boba)\s*$/i);
+          const match = text.match(/^(?:@astra[,:]?\s+)?\/build\s+(party|wakeup|boba)\s*$/i);
           if (match) {
             const result = await buildSite(ScenarioSchema.parse(match[1].toLowerCase()));
             return `${result.mocked ? "Mock result" : "Your site"}: ${result.url}`;
           }
-          return "[Mock Astra] I can help with party planning, a wake-up leaderboard, or a boba order. Send /build party, /build wakeup, or /build boba to test a build.";
+          return "[Mock Astra] I can help with party planning, a wake-up leaderboard, or a boba order. Send @Astra /build party, @Astra /build wakeup, or @Astra /build boba to test a build.";
         },
         catch: toError,
       }),

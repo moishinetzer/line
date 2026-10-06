@@ -43,8 +43,9 @@ The default model is `gpt-6-astra`, using the Responses API via Effect AI.
 There is no automatic fallback to another model. Keep `LOVABLE_MODE=mock` while
 tuning conversation prompts if you want to avoid creating Lovable projects.
 
-Each incoming message gets an agent turn. The model can respond conversationally,
-ask the group to wait, or call `build_site({ scenario })`. The tool reads exactly
+Only incoming messages tagged `@Astra` get an agent turn; ordinary group messages
+remain available as context. Each new response requires a tag. The model can
+respond conversationally, ask the group to wait, or call `build_site({ scenario })`. The tool reads exactly
 one of `party.md`, `wakeup.md`, or `boba.md` and sends that fixed prompt to Lovable.
 
 ## Connect Lovable MCP
@@ -54,7 +55,7 @@ one of `party.md`, `wakeup.md`, or `boba.md` and sends that fixed prompt to Lova
 3. Visit http://localhost:3001/lovable/tools to verify tool discovery.
 4. If you have several eligible workspaces, get their IDs from
    http://localhost:3001/lovable/workspaces and set `LOVABLE_WORKSPACE_ID` explicitly.
-5. Ask Astra to build a site (or use `/build party` with the mock agent).
+5. Tag `@Astra` to build a site (or use `@Astra /build party` with the mock agent).
 
 OAuth credentials are saved in `.local/lovable-auth.json`, excluded from Git.
 The backend calls `create_project` with `wait=true`, then gets the preview URL

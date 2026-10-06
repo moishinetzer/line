@@ -24,7 +24,7 @@ socket.onmessage = ({ data }) => {
   console.log(event);
 };
 // After room.snapshot arrives:
-send({ type: "chat.send", id: crypto.randomUUID(), text: "Let's plan a party" });
+send({ type: "chat.send", id: crypto.randomUUID(), text: "@Astra let's plan a party" });
 ```
 
 `room.join` may be sent again to switch identity or room. All sockets in a room
@@ -32,9 +32,11 @@ receive messages and build events. The server echoes accepted user messages;
 deduplicate by message ID if rendering optimistically. IDs must be unique per room;
 resending the same ID does not trigger another agent turn or build.
 
-Every accepted chat message gets one agent turn. No tag is required. Turns run in
-order per room. Different rooms can run independently. `room.snapshot` replays
-history and build state on reconnect. State is in memory and clears on restart.
+Only messages containing the standalone tag `@Astra` (case-insensitive) trigger
+an agent turn. Each response needs a fresh tag; untagged follow-ups do not wake
+the agent. All messages are broadcast and kept as context. Turns run in order per
+room. Different rooms can run independently. `room.snapshot` replays history and
+build state on reconnect. State is in memory and clears on restart.
 
 ## Events to render
 
@@ -63,7 +65,7 @@ are passed unchanged to Lovable; conversation details are not interpolated yet.
 The same scenario is reused within a room after a successful build. Reset the
 room to intentionally build it again.
 
-Mock agent commands: `/build party`, `/build wakeup`, `/build boba`.
+Mock agent commands: `@Astra /build party`, `@Astra /build wakeup`, `@Astra /build boba`.
 These go through the same build pipeline. A mock Lovable URL is a clearly labelled
 local receipt, not a generated app. Set `DEMO_PARTY_URL`, `DEMO_WAKEUP_URL`, or
 `DEMO_BOBA_URL` to point mock results at prebuilt demo sites.

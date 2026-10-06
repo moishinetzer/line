@@ -3,6 +3,7 @@ import { test } from "node:test";
 import { once } from "node:events";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
+import { createServer } from "node:http";
 import { WebSocket } from "ws";
 import type { ClientEvent, ServerEvent } from "@group-dots/protocol";
 import { startServer } from "../src/server.ts";
@@ -32,6 +33,51 @@ export async function client(port: number, roomId = "demo", id = "alex") {
   return { socket, send, wait, events };
 }
 
+test("Astra only responds when tagged and retains ordinary group messages as context", async () => {
+  const dir = await mkdtemp(`${tmpdir()}/group-dots-mentions-`);
+  const requests: Array<{ input: unknown }> = [];
+  const ai = createServer((request, response) => {
+    void (async () => {
+      const chunks: Buffer[] = [];
+      for await (const chunk of request) chunks.push(Buffer.from(chunk));
+      requests.push(JSON.parse(Buffer.concat(chunks).toString()));
+      response.writeHead(200, { "content-type": "application/json" });
+      response.end(JSON.stringify({
+        id: `resp-${requests.length}`, model: "gpt-6-astra", created_at: 1,
+        output: [{ id: `reply-${requests.length}`, type: "message", role: "assistant", status: "completed", content: [{ type: "output_text", text: "Here to help.", annotations: [] }] }],
+      }));
+    })().catch(() => { response.statusCode = 500; response.end(); });
+  });
+  await new Promise<void>((resolve) => ai.listen(0, "127.0.0.1", resolve));
+  const address = ai.address();
+  assert.ok(address && typeof address !== "string");
+  const server = await startServer({ ...testConfig(dir), agentMode: "astra", apiKey: "test-key", apiUrl: `http://127.0.0.1:${address.port}` });
+  try {
+    const alex = await client(server.port);
+    for (const [id, text] of [
+      ["ordinary", "Sam is buying the drinks."],
+      ["email", "Contact alex@astra.com"],
+      ["other-tag", "@AstraBot @astral @astra-team"],
+      ["tagged", "Hey @aStRa, can you help?"],
+    ]) alex.send({ type: "chat.send", id, text });
+    await alex.wait((event) => event.type === "chat.message" && event.message.replyTo === "tagged");
+    assert.equal(requests.length, 1, "Untagged messages must not call the model");
+    assert.match(JSON.stringify(requests[0].input), /Sam is buying the drinks/);
+    assert.deepEqual(alex.events.filter((event) => event.type === "agent.status" && event.status === "thinking").map((event) => event.type === "agent.status" && event.requestId), ["tagged"]);
+    alex.send({ type: "chat.send", id: "follow-up", text: "Jo will bring cups." });
+    alex.send({ type: "chat.send", id: "tagged-again", text: "@Astra: what else is needed?" });
+    await alex.wait((event) => event.type === "chat.message" && event.message.replyTo === "tagged-again");
+    assert.equal(requests.length, 2, "Each agent turn needs its own tag");
+    assert.match(JSON.stringify(requests[1].input), /Jo will bring cups/);
+    const replies = alex.events.filter((event) => event.type === "chat.message" && event.message.role === "assistant");
+    assert.deepEqual(replies.map((event) => event.type === "chat.message" && event.message.replyTo), ["tagged", "tagged-again"]);
+  } finally {
+    await server.close();
+    await new Promise<void>((resolve) => ai.close(() => resolve()));
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test("three scenarios, room broadcasts, deduplication, replay, isolation and reset", async () => {
   const dir = await mkdtemp(`${tmpdir()}/group-dots-test-`);
   const server = await startServer(testConfig(dir));
@@ -40,8 +86,8 @@ test("three scenarios, room broadcasts, deduplication, replay, isolation and res
     const sam = await client(server.port, "demo", "sam");
     const other = await client(server.port, "other", "jo");
     for (const scenario of ["party", "wakeup", "boba"] as const) {
-      alex.send({ type: "chat.send", id: scenario, text: `/build ${scenario}` });
-      alex.send({ type: "chat.send", id: scenario, text: `/build ${scenario}` });
+      alex.send({ type: "chat.send", id: scenario, text: `@Astra /build ${scenario}` });
+      alex.send({ type: "chat.send", id: scenario, text: `@Astra /build ${scenario}` });
       await alex.wait((event) => event.type === "site.ready" && event.build.scenario === scenario);
       await sam.wait((event) => event.type === "chat.message" && event.message.replyTo === scenario);
       assert.equal(alex.events.filter((event) => event.type === "site.building" && event.build.scenario === scenario).length, 1);
@@ -52,7 +98,7 @@ test("three scenarios, room broadcasts, deduplication, replay, isolation and res
     const snapshot = replay.events.find((event) => event.type === "room.snapshot");
     assert.equal(snapshot?.type === "room.snapshot" && snapshot.messages.length, 6);
     assert.equal(snapshot?.type === "room.snapshot" && snapshot.builds.length, 3);
-    alex.send({ type: "chat.send", id: "reuse", text: "/build party" });
+    alex.send({ type: "chat.send", id: "reuse", text: "@Astra /build party" });
     await alex.wait((event) => event.type === "chat.message" && event.message.replyTo === "reuse");
     assert.equal(alex.events.filter((event) => event.type === "site.building").length, 3);
     alex.send({ type: "room.reset" });
@@ -79,8 +125,8 @@ test("validates input, requires join, queues turns, and rejects reset while busy
     assert.equal(JSON.parse((await incoming)[0].toString()).code, "JOIN_REQUIRED");
     fresh.close();
     const alex = await client(server.port);
-    alex.send({ type: "chat.send", id: "first", text: "/build party" });
-    alex.send({ type: "chat.send", id: "second", text: "thanks" });
+    alex.send({ type: "chat.send", id: "first", text: "@Astra /build party" });
+    alex.send({ type: "chat.send", id: "second", text: "@Astra thanks" });
     alex.send({ type: "room.reset" });
     await alex.wait((event) => event.type === "error" && event.code === "ROOM_BUSY");
     await alex.wait((event) => event.type === "chat.message" && event.message.replyTo === "second");

@@ -80,6 +80,6 @@ element("chat").addEventListener("submit", (event) => {
 user.onchange = join;
 element("reset").onclick = () => { errors.textContent = ""; send({ type: "room.reset" }); };
 document.querySelectorAll<HTMLButtonElement>("[data-scenario]").forEach((button) => {
-  button.onclick = () => chat(mode === "mock" ? `/build ${button.dataset.scenario}` : `Everyone is ready. Please build our ${button.dataset.scenario} app now.`);
+  button.onclick = () => chat(mode === "mock" ? `@Astra /build ${button.dataset.scenario}` : `@Astra everyone is ready. Please build our ${button.dataset.scenario} app now.`);
 });
 connect();
