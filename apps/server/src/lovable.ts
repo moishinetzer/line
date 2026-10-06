@@ -1,13 +1,14 @@
 import { Context, Effect, Layer } from "effect";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import type { Scenario } from "@group-dots/protocol";
+import type { Build, Scenario } from "@group-dots/protocol";
 import type { Config } from "./config.ts";
 import { type BuildResult, toError } from "./agent.ts";
 import { LovableAuth } from "./lovable-auth.ts";
 
 export class SiteBuilder extends Context.Service<SiteBuilder, {
-  build: (scenario: Scenario, prompt: string) => Effect.Effect<BuildResult, Error>;
+  build: (scenario: Scenario, prompt: string, checkpoint?: (result: BuildResult) => Promise<void>) => Effect.Effect<BuildResult, Error>;
+  check: (build: Build) => Effect.Effect<BuildResult, Error>;
 }>()("group-dots/SiteBuilder") {}
 
 export class LovableConnection {
@@ -51,43 +52,69 @@ export class LovableConnection {
   async close() { await this.client?.close(); this.client = undefined; }
 }
 
-export function siteBuilderLayer(config: Config, connection: LovableConnection) {
+type ToolConnection = Pick<LovableConnection, "call">;
+
+// get_message.status is the USER message status and can stay running forever.
+// The agent's nested response is authoritative; scaffold completion is not a build.
+export function agentOutcome(data: Record<string, unknown>): string {
+  const response = (data.response ?? data.agent_response) as Record<string, unknown> | undefined;
+  const result = response && typeof response === "object" ? response : data;
+  if (result.awaiting_input || result.status === "awaiting_input") return "awaiting_input";
+  if (result.completion_reason && result.completion_reason !== "finished") return "failed";
+  if (["failed", "error", "stopped"].includes(String(result.status))) return "failed";
+  if (result.status === "completed") return "ready";
+  return "checking";
+}
+
+export function siteBuilderLayer(config: Config, connection: ToolConnection) {
+  const inspect = async (build: BuildResult): Promise<BuildResult> => {
+    if (!build.projectId) throw new Error("No project ID was returned. Inspect Lovable before resetting this build; do not create another project blindly.");
+    let status = build.status ?? "checking";
+    if (build.messageId) {
+      const message = await connection.call("get_message", { project_id: build.projectId, message_id: build.messageId });
+      status = agentOutcome(message) as Build["status"];
+    }
+    if (status === "awaiting_input") return { ...build, status, error: undefined };
+    if (status === "failed") return { ...build, status, error: "Lovable stopped or failed. Inspect the existing project in the editor." };
+    const project = await connection.call("get_project", { project_id: build.projectId });
+    const details = project.project as Record<string, unknown> | undefined;
+    // Without a message, require positive agent completion, never provisioning.status.
+    if (!build.messageId) status = details?.agentFinished === true ? "ready" : "checking";
+    const url = findString(project, ["preview_url", "previewUrl"]);
+    if (status === "ready" && url && /^https?:\/\//.test(url)) return { ...build, status, url, error: undefined };
+    return { ...build, status: "checking", error: undefined };
+  };
   return Layer.succeed(SiteBuilder, {
-    build: (scenario, prompt) => Effect.tryPromise({
+    build: (scenario, prompt, checkpoint) => Effect.tryPromise({
       try: async () => {
         if (config.lovableMode === "mock") {
           await new Promise((resolve) => setTimeout(resolve, 300));
-          return { url: config.demoUrls[scenario] || `http://localhost:${config.port}/demo/${scenario}`, mocked: true };
+          return { status: "ready" as const, url: config.demoUrls[scenario] || `http://localhost:${config.port}/demo/${scenario}`, mocked: true };
         }
         const created = await connection.call("create_project", {
           initial_message: prompt,
           ...(config.workspaceId ? { workspace_id: config.workspaceId } : {}),
-          wait: true,
+          wait: false,
           timeout_seconds: 600,
         });
         if (created.available_workspaces || String(created.status).toUpperCase() === "WAITING") {
-          throw new Error("Lovable needs a workspace selection. Set LOVABLE_WORKSPACE_ID in .env and retry.");
+          throw new Error("Lovable needs a workspace selection. Set LOVABLE_WORKSPACE_ID in .env; inspect before resetting this job.");
         }
-        const projectId = findString(created, ["projectId", "project_id"]) ?? projectField(created, "id");
-        if (!projectId) throw new Error("Lovable did not return a project ID; inspect the response before retrying.");
-        const status = String(created.status ?? "").toLowerCase();
-        if (["failed", "error", "awaiting_input", "in_progress", "running", "timeout", "timed_out"].includes(status)) {
-          throw new Error(`Lovable project ${projectId} is ${status}; check it in Lovable before building again.`);
-        }
-        const project = await connection.call("get_project", { project_id: projectId });
-        const url = findString(project, ["preview_url", "previewUrl"]) ?? findString(created, ["preview_url", "previewUrl"]);
-        if (!url || !/^https?:\/\//.test(url)) throw new Error(`Project ${projectId} exists but has no preview URL yet. Check Lovable.`);
-        return { url, projectId, mocked: false };
+        const projectId = findString(created, ["projectId", "project_id"]) ?? (typeof created.id === "string" ? created.id : undefined);
+        if (!projectId) throw new Error("Lovable did not return a project ID. Inspect your workspace before resetting this job.");
+        // Use the TOP-LEVEL user message ID, never the agent response's message ID.
+        const messageId = typeof created.message_id === "string" ? created.message_id : undefined;
+        const initial: BuildResult = {
+          projectId, messageId, editorUrl: `https://lovable.dev/projects/${encodeURIComponent(projectId)}`,
+          status: created.agent_response || created.response || created.awaiting_input ? agentOutcome(created) as Build["status"] : "checking", mocked: false,
+        };
+        await checkpoint?.(initial);
+        return inspect(initial);
       },
       catch: toError,
     }),
+    check: (build) => Effect.tryPromise({ try: () => inspect(build), catch: toError }),
   });
-}
-
-function projectField(data: Record<string, unknown>, key: string): string | undefined {
-  const project = data.project;
-  return project && typeof project === "object" && key in project && typeof project[key as keyof typeof project] === "string"
-    ? project[key as keyof typeof project] as string : undefined;
 }
 
 function findString(data: unknown, keys: string[]): string | undefined {

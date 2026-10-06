@@ -18,42 +18,42 @@ let busy = false;
 let selectedUser = user.value;
 const seedingRooms = new Set<string>();
 const drafts = new Map<Scenario, Line>();
-const astraTag = /(^|[\s([{])@astra(?=$|[\s.,!?;:)\]}])/i;
+const astraTag = /(^|[\s([{])@lines(?=$|[\s.,!?;:)\]}])/i;
 
 type Line = { user: string; text: string };
 const scenes: Record<Scenario, { title: string; goal: string; opening: Line[]; lines: Line[] }> = {
   party: {
     title: "Weekend party",
-    goal: "Ask for help → Astra clarifies → agree → open the shared supplies list.",
+    goal: "Ask for help → Lines clarifies → agree → open the shared supplies list.",
     opening: [
-      { user: "sam", text: "Party at mine this weekend?" },
-      { user: "jo", text: "I'm in. Who's bringing what?" },
+      { user: "maya", text: "Party at mine this weekend?" },
+      { user: "leo", text: "I'm in. Who's bringing what?" },
     ],
     lines: [
-      { user: "alex", text: "@Astra help us organise the party?" },
-      { user: "sam", text: "@Astra yes, make it." },
+      { user: "ao", text: "@Lines help us organise the party?" },
+      { user: "maya", text: "@Lines yes, make it." },
     ],
   },
   wakeup: {
     title: "Morning challenge",
     goal: "Request the leaderboard → open the app → tap “I'm up”.",
     opening: [
-      { user: "alex", text: "Snoozed my alarm again." },
-      { user: "sam", text: "We need some competition." },
+      { user: "ao", text: "Snoozed my alarm again." },
+      { user: "maya", text: "We need some competition." },
     ],
     lines: [
-      { user: "jo", text: "@Astra build us a morning check-in leaderboard." },
+      { user: "leo", text: "@Lines build us a morning check-in leaderboard." },
     ],
   },
   boba: {
     title: "Boba run",
     goal: "Request the shared order list → pick a drink → show the group summary.",
     opening: [
-      { user: "jo", text: "Boba run?" },
-      { user: "alex", text: "Yes! Everyone's order gets lost here." },
+      { user: "leo", text: "Boba run?" },
+      { user: "ao", text: "Yes! Everyone's order gets lost here." },
     ],
     lines: [
-      { user: "sam", text: "@Astra make us a shared boba order list." },
+      { user: "maya", text: "@Lines make us a shared boba order list." },
     ],
   },
 };
@@ -166,7 +166,7 @@ function connect() {
         // Rejoining a chat may happen after its thinking event was sent.
         busy = event.messages.some((message) => message.role === "user" && astraTag.test(message.text)
           && !event.messages.some((reply) => reply.replyTo === message.id));
-        status.textContent = busy ? "Astra is thinking…" : "Connected · tag @Astra to get a reply";
+        status.textContent = busy ? "Lines is thinking…" : "Connected · tag @Lines to get a reply";
         element("mode").textContent = event.lovableMode === "mock"
           ? `Agent: ${event.agentMode}. Builds use fixed demo links or local receipts; no new Lovable projects.`
           : `Agent: ${event.agentMode}. Live Lovable builds are enabled and create real projects.`;
@@ -178,7 +178,7 @@ function connect() {
       case "chat.message": renderMessage(event.message); break;
       case "agent.status":
         busy = event.status === "thinking";
-        status.textContent = busy ? "Astra is thinking…" : "Connected · tag @Astra to get a reply";
+        status.textContent = busy ? "Lines is thinking…" : "Connected · tag @Lines to get a reply";
         controls(); break;
       case "site.building": case "site.ready": case "site.failed":
         builds.set(event.build.id, event.build); renderBuilds(); break;

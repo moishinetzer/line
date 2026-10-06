@@ -25,8 +25,8 @@ are separate from the main demo room. Histories survive switches and page reload
 while the server is running; restarting the backend clears them.
 
 Try freeform messages too: explicit build requests should skip clarification;
-an explicit “wait for Sam” should wait; untagged chatter should get no reply.
-Every follow-up that needs an Astra response must tag `@Astra` again.
+an explicit “wait for Maya” should wait; untagged chatter should get no reply.
+Every follow-up that needs an Astra response must tag `@Lines` again.
 
 The three Lovable prompts remain fixed. Chat details do not customise them.
 The conversation prompt belongs to Moishi; the main WhatsApp UI and Lovable

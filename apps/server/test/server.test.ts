@@ -33,7 +33,7 @@ export async function client(port: number, roomId = "demo", id = "alex") {
   return { socket, send, wait, events };
 }
 
-test("Astra only responds when tagged and retains ordinary group messages as context", async () => {
+test("Lines only responds when tagged and retains ordinary group messages as context", async () => {
   const dir = await mkdtemp(`${tmpdir()}/group-dots-mentions-`);
   const requests: Array<{ input: unknown }> = [];
   const ai = createServer((request, response) => {
@@ -56,16 +56,18 @@ test("Astra only responds when tagged and retains ordinary group messages as con
     const alex = await client(server.port);
     for (const [id, text] of [
       ["ordinary", "Sam is buying the drinks."],
-      ["email", "Contact alex@astra.com"],
-      ["other-tag", "@AstraBot @astral @astra-team"],
-      ["tagged", "Hey @aStRa, can you help?"],
+      ["email", "Contact alex@lines.com"],
+      ["other-tag", "@LinesBot @linesl @lines-team"],
+      ["former-agent", "@Astra hello"],
+      ["url", "https://example.com/@Lines"],
+      ["tagged", "Hey @lInEs, can you help?"],
     ]) alex.send({ type: "chat.send", id, text });
     await alex.wait((event) => event.type === "chat.message" && event.message.replyTo === "tagged");
     assert.equal(requests.length, 1, "Untagged messages must not call the model");
     assert.match(JSON.stringify(requests[0].input), /Sam is buying the drinks/);
     assert.deepEqual(alex.events.filter((event) => event.type === "agent.status" && event.status === "thinking").map((event) => event.type === "agent.status" && event.requestId), ["tagged"]);
     alex.send({ type: "chat.send", id: "follow-up", text: "Jo will bring cups." });
-    alex.send({ type: "chat.send", id: "tagged-again", text: "@Astra: what else is needed?" });
+    alex.send({ type: "chat.send", id: "tagged-again", text: "@Lines: what else is needed?" });
     await alex.wait((event) => event.type === "chat.message" && event.message.replyTo === "tagged-again");
     assert.equal(requests.length, 2, "Each agent turn needs its own tag");
     assert.match(JSON.stringify(requests[1].input), /Jo will bring cups/);
@@ -86,8 +88,8 @@ test("three scenarios, room broadcasts, deduplication, replay, isolation and res
     const sam = await client(server.port, "demo", "sam");
     const other = await client(server.port, "other", "jo");
     for (const scenario of ["party", "wakeup", "boba"] as const) {
-      alex.send({ type: "chat.send", id: scenario, text: `@Astra /build ${scenario}` });
-      alex.send({ type: "chat.send", id: scenario, text: `@Astra /build ${scenario}` });
+      alex.send({ type: "chat.send", id: scenario, text: `@Lines /build ${scenario}` });
+      alex.send({ type: "chat.send", id: scenario, text: `@Lines /build ${scenario}` });
       await alex.wait((event) => event.type === "site.ready" && event.build.scenario === scenario);
       await sam.wait((event) => event.type === "chat.message" && event.message.replyTo === scenario);
       assert.equal(alex.events.filter((event) => event.type === "site.building" && event.build.scenario === scenario).length, 1);
@@ -98,7 +100,7 @@ test("three scenarios, room broadcasts, deduplication, replay, isolation and res
     const snapshot = replay.events.find((event) => event.type === "room.snapshot");
     assert.equal(snapshot?.type === "room.snapshot" && snapshot.messages.length, 6);
     assert.equal(snapshot?.type === "room.snapshot" && snapshot.builds.length, 3);
-    alex.send({ type: "chat.send", id: "reuse", text: "@Astra /build party" });
+    alex.send({ type: "chat.send", id: "reuse", text: "@Lines /build party" });
     await alex.wait((event) => event.type === "chat.message" && event.message.replyTo === "reuse");
     assert.equal(alex.events.filter((event) => event.type === "site.building").length, 3);
     alex.send({ type: "room.reset" });
@@ -125,8 +127,8 @@ test("validates input, requires join, queues turns, and rejects reset while busy
     assert.equal(JSON.parse((await incoming)[0].toString()).code, "JOIN_REQUIRED");
     fresh.close();
     const alex = await client(server.port);
-    alex.send({ type: "chat.send", id: "first", text: "@Astra /build party" });
-    alex.send({ type: "chat.send", id: "second", text: "@Astra thanks" });
+    alex.send({ type: "chat.send", id: "first", text: "@Lines /build party" });
+    alex.send({ type: "chat.send", id: "second", text: "@Lines thanks" });
     alex.send({ type: "room.reset" });
     await alex.wait((event) => event.type === "error" && event.code === "ROOM_BUSY");
     await alex.wait((event) => event.type === "chat.message" && event.message.replyTo === "second");

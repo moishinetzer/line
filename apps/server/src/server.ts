@@ -2,10 +2,11 @@ import { createServer, type ServerResponse } from "node:http";
 import { randomUUID } from "node:crypto";
 import { Effect, Layer, ManagedRuntime } from "effect";
 import { WebSocket, WebSocketServer } from "ws";
-import { ClientEventSchema, type Build, type ChatMessage, type Scenario, type ServerEvent, type User } from "@group-dots/protocol";
+import { ClientEventSchema, hasLinesMention, type Build, type ChatMessage, type Scenario, type ServerEvent, type User } from "@group-dots/protocol";
 import { Agent, agentLayer, type BuildResult, toError } from "./agent.ts";
 import type { Config } from "./config.ts";
 import { LovableConnection, SiteBuilder, siteBuilderLayer } from "./lovable.ts";
+import { buildJournal } from "./build-journal.ts";
 import { readPrompt } from "./prompts.ts";
 
 type Room = {
@@ -19,9 +20,10 @@ type Room = {
   pending: number;
 };
 type Membership = { room: Room; user: User };
-const astra: User = { id: "astra", name: "Astra" };
+const lines: User = { id: "lines", name: "Lines" };
 
 export async function startServer(config: Config) {
+  const journal = await buildJournal(config.stateDir);
   const lovable = new LovableConnection(config);
   const runtime = ManagedRuntime.make(Layer.mergeAll(agentLayer(config), siteBuilderLayer(config, lovable)));
   const rooms = new Map<string, Room>();
@@ -42,22 +44,37 @@ export async function startServer(config: Config) {
     broadcast(room, { type: "chat.message", roomId: room.id, message });
   };
 
+  const saveBuilds = (room: Room) => config.lovableMode === "mcp"
+    ? journal.save(room.id, [...room.builds.values()]) : Promise.resolve();
+
   async function buildSite(room: Room, requestId: string, scenario: Scenario): Promise<BuildResult> {
     const existing = room.builds.get(scenario);
-    if (existing?.status === "ready" && existing.url) return { url: existing.url, projectId: existing.projectId, mocked: existing.mocked };
+    if (existing?.status === "ready" && existing.url) return existing;
     if (existing?.status === "building") throw new Error("This site is already building");
-    const build: Build = { id: randomUUID(), scenario, status: "building", mocked: config.lovableMode === "mock" };
+    if (existing && !existing.mocked && !existing.projectId) throw new Error("Creation outcome is unknown. Inspect Lovable before intentionally resetting the room.");
+    const build: Build = existing ?? { id: randomUUID(), scenario, status: "building", mocked: config.lovableMode === "mock" };
     room.builds.set(scenario, build);
+    const previousStatus = build.status;
+    build.status = "building";
+    await saveBuilds(room);
     broadcast(room, { type: "site.building", roomId: room.id, requestId, build });
     try {
-      const prompt = await readPrompt(scenario);
-      const result = await runtime.runPromise(Effect.flatMap(SiteBuilder, (builder) => builder.build(scenario, prompt)));
-      Object.assign(build, result, { status: "ready" });
-      broadcast(room, { type: "site.ready", roomId: room.id, requestId, build });
+      const awaitablePrompt = existing?.projectId ? "" : await readPrompt(scenario);
+      const result = await runtime.runPromise(Effect.flatMap(SiteBuilder, (builder) =>
+        existing?.projectId ? builder.check({ ...build, status: previousStatus }) : builder.build(scenario, awaitablePrompt, async (receipt) => {
+          Object.assign(build, receipt);
+          await saveBuilds(room);
+        })
+      ));
+      Object.assign(build, result);
+      build.status = result.status ?? "ready";
+      await saveBuilds(room);
+      broadcast(room, { type: build.status === "ready" ? "site.ready" : build.status === "failed" ? "site.failed" : "site.waiting", roomId: room.id, requestId, build });
       return result;
     } catch (error) {
       build.status = "failed";
       build.error = toError(error).message;
+      await saveBuilds(room);
       broadcast(room, { type: "site.failed", roomId: room.id, requestId, build });
       throw error;
     }
@@ -65,7 +82,7 @@ export async function startServer(config: Config) {
 
   async function respond(room: Room, message: ChatMessage) {
     room.context.push(message);
-    if (!/(^|[\s([{])@astra(?=$|[\s.,!?;:)\]}])/i.test(message.text)) {
+    if (!hasLinesMention(message.text)) {
       room.pending--;
       return;
     }
@@ -75,12 +92,12 @@ export async function startServer(config: Config) {
         messages: [...room.context],
         buildSite: (scenario) => buildSite(room, message.id, scenario),
       })));
-      const reply: ChatMessage = { id: randomUUID(), roomId: room.id, role: "assistant", user: astra, text, replyTo: message.id, createdAt: new Date().toISOString() };
+      const reply: ChatMessage = { id: randomUUID(), roomId: room.id, role: "assistant", user: lines, text, replyTo: message.id, createdAt: new Date().toISOString() };
       room.context.push(reply);
       addMessage(room, reply);
     } catch (error) {
       broadcast(room, { type: "error", code: "AGENT_FAILED", message: toError(error).message, requestId: message.id });
-      const reply: ChatMessage = { id: randomUUID(), roomId: room.id, role: "assistant", user: astra, text: "I couldn't complete that request. Check the error and send a new message to retry.", replyTo: message.id, createdAt: new Date().toISOString() };
+      const reply: ChatMessage = { id: randomUUID(), roomId: room.id, role: "assistant", user: lines, text: "I couldn't complete that request. Check the error and send a new message to retry.", replyTo: message.id, createdAt: new Date().toISOString() };
       room.context.push(reply);
       addMessage(room, reply);
     } finally {
@@ -145,7 +162,7 @@ export async function startServer(config: Config) {
       if (event.type === "room.join") {
         let room = rooms.get(event.roomId);
         if (!room) {
-          room = { id: event.roomId, messages: [], context: [], builds: new Map(), users: new Map(), seen: new Set(), queue: Promise.resolve(), pending: 0 };
+          room = { id: event.roomId, messages: [], context: [], builds: new Map((config.lovableMode === "mcp" ? journal.get(event.roomId) : []).map((build) => [build.scenario, build])), users: new Map(), seen: new Set(), queue: Promise.resolve(), pending: 0 };
           rooms.set(event.roomId, room);
         }
         room.users.set(event.user.id, event.user);
@@ -160,7 +177,19 @@ export async function startServer(config: Config) {
       if (event.type === "room.reset") {
         if (room.pending) { send(socket, { type: "error", code: "ROOM_BUSY", message: "Wait for the current turns/builds before resetting" }); return; }
         room.messages = []; room.context = []; room.builds.clear(); room.seen.clear();
-        broadcast(room, snapshot(room)); return;
+        void saveBuilds(room).then(() => broadcast(room, snapshot(room))).catch((error) => send(socket, { type: "error", code: "SAVE_FAILED", message: toError(error).message })); return;
+      }
+      if (event.type === "build.check") {
+        const build = [...room.builds.values()].find((build) => build.id === event.buildId);
+        if (!build?.projectId) { send(socket, { type: "error", code: "BUILD_NOT_FOUND", message: "No resumable project in this room" }); return; }
+        if (room.pending) { send(socket, { type: "error", code: "ROOM_BUSY", message: "Wait for the current request to finish" }); return; }
+        room.pending++;
+        room.queue = room.queue.then(async () => {
+          try { await buildSite(room, randomUUID(), build.scenario); }
+          catch (error) { send(socket, { type: "error", code: "CHECK_FAILED", message: toError(error).message }); }
+          finally { room.pending--; }
+        });
+        return;
       }
       if (room.seen.has(event.id)) return;
       if (room.pending >= 20) { send(socket, { type: "error", code: "ROOM_BUSY", requestId: event.id, message: "Too many queued turns; wait and retry" }); return; }
