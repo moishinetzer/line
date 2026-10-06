@@ -1,4 +1,6 @@
-# Group Dots
+# Line
+
+[GitHub repository](https://github.com/moishinetzer/line)
 
 Astra in a group chat → one of three Lovable mini-apps. Local hackathon backend
 with a replaceable frontend starter. npm workspaces, TypeScript, Effect 4 +
@@ -28,6 +30,7 @@ the `DEMO_*_URL` variables to return prebuilt sites instead.
 | Shared contract | `packages/protocol/src/index.ts` |
 
 **Frontend teammate: start with [docs/INTEGRATION.md](docs/INTEGRATION.md).**
+For the recording and verified live-build status, see [docs/DEMO.md](docs/DEMO.md).
 You can run only the UI with `npm run dev:web` or only the backend with
 `npm run dev:server`. Prompt edits are loaded on the next request, without a restart.
 
